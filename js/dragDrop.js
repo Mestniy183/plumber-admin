@@ -1,4 +1,5 @@
 export function setupDragAndDrop() {
+    console.log(1);
     const dropAreas = document.querySelectorAll('drop-area');
 
     dropAreas.forEach(dropArea => {
@@ -17,7 +18,7 @@ export function setupDragAndDrop() {
             dropArea.addEventListener(eventName, unhighlight, false)
         });
 
-        dropArea.addEventListener('drop', 'handleDrop', false);
+        dropArea.addEventListener('drop', handleDrop, false);
         fileInput.addEventListener('change', handleFileSelect);
 
         function handleFileSelect() {
