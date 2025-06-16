@@ -11,7 +11,7 @@ export function setupDragAndDrop(){
             dropArea.addEventListener(eventName,highlight,false)
         });
         ['dragleave','drop'].forEach(eventName => {
-            dropArea.addEventListener(eventName,highlight,false)
+            dropArea.addEventListener(eventName,unhighlight,false)
         });
     })
 }
