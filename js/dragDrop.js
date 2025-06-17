@@ -1,10 +1,9 @@
 export function setupDragAndDrop() {
-    console.log(1);
-    const dropAreas = document.querySelectorAll('drop-area');
+    const dropAreas = document.querySelectorAll('.drop-area');
 
     dropAreas.forEach(dropArea => {
         const fileInput = dropArea.querySelector('.file-input');
-        const preview = dropArea.closest('file-upload').querySelector('.file-preview');
+        const preview = dropArea.closest('.file-upload').querySelector('.file-preview');
 
         ['dragenter', 'dragover', 'dragleave', 'drop'].forEach(eventName => {
             dropArea.addEventListener(eventName, preventDefaults, false)
@@ -29,7 +28,7 @@ export function setupDragAndDrop() {
     })
 
     function preventDefaults(e) {
-        e.preventDefaults();
+        e.preventDefault();
         e.stopPropagation();
     }
     function highlight() {
@@ -73,6 +72,9 @@ export function setupDragAndDrop() {
             fileInput.value = '';
             preview.innerHTML = '';
         };
+
+        preview.append(img);
+        preview.append(removeBtn);
 
     }
 
