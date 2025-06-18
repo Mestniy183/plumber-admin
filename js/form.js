@@ -1,4 +1,4 @@
-function setupFormSubmissions(){
+export function setupFormSubmissions(){
     document.querySelector('.services__new-form').addEventListener('submit', function(e){
         e.preventDefault();
         if(validateForm(this)){
@@ -61,5 +61,38 @@ function setupFormSubmissions(){
             errorElement.style.display = 'block';
         }
         return isValid;
+    }
+
+    function submitForm(form,url){
+        const formData = new FormData(form);
+        const submitBtn = form.querySelector('.submit-btn');
+
+        submitBtn.disabled = true;
+        submitBtn.textContent = 'Отправка...';
+
+        fetch(url,{
+            method: 'POST',
+            body: formData
+        })
+        .then(response =>{
+            if(!response.ok) throw new Error('Ошибка сети');
+            return response.json();
+        })
+        .then(data =>{
+            alert('Данные успешно сохранены!');
+            form.reset();
+            //Очишаем превью изображений
+            form.querySelectorAll('.file-preview').forEach(preview =>{
+                preview.innerHTML = '';
+            });
+        })
+        .catch(error => {
+            console.error('Ошибка:', error);
+            alert('Произошла ошибка при отправке данных');
+        })
+        .finally(() => {
+            submitBtn.disabled = false;
+            submitBtn.textContent = 'Создать';
+        })
     }
 }
