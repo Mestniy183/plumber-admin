@@ -1,33 +1,42 @@
+const supabaseURL = 'https://voygehzdwnkrsowhseyh.supabase.co';
+const supabaseKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InZveWdlaHpkd25rcnNvd2hzZXloIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTAzMjI0ODYsImV4cCI6MjA2NTg5ODQ4Nn0.zf0QL4lGuSv1jT4cLPD2UGBEiv4JgSp0lVoLKC47AGc'
+
+const supabaseDB = supabase.createClient(supabaseURL, supabaseKey)
+
+
 export function setupFormSubmissions(){
-    document.querySelector('.services__new-form').addEventListener('submit', function(e){
+    document.querySelector('.services__new-form').addEventListener('submit', async function(e){
         e.preventDefault();
         if(validateForm(this)){
-            submitForm(this, '/api/services');
+            const title = this.querySelector('.services-title')
+            const descr = this.querySelector('.services-description')
+            await submitForm(this, 'services', title, descr);
         }
+   
     });
 
-    document.querySelector('.example__new-form').addEventListener('submit', function(e){
-        e.preventDefault();
-        if(validateForm(this)){
-            submitForm(this, '/api/examples');
-        }
-    });
+    // document.querySelector('.example__new-form').addEventListener('submit', function(e){
+    //     e.preventDefault();
+    //     if(validateForm(this)){
+    //         submitForm(this, '/api/examples');
+    //     }
+    // });
 
 
-    document.querySelector('.question__new-form').addEventListener('submit', function(e){
-        e.preventDefault();
-        if(validateForm(this)){
-            submitForm(this, '/api/questions');
-        }
-    });
+    // document.querySelector('.question__new-form').addEventListener('submit', function(e){
+    //     e.preventDefault();
+    //     if(validateForm(this)){
+    //         submitForm(this, '/api/questions');
+    //     }
+    // });
 
 
-    document.querySelector('.comment__new-form').addEventListener('submit', function(e){
-        e.preventDefault();
-        if(validateForm(this)){
-            submitForm(this, '/api/comments');
-        }
-    });
+    // document.querySelector('.comment__new-form').addEventListener('submit', function(e){
+    //     e.preventDefault();
+    //     if(validateForm(this)){
+    //         submitForm(this, '/api/comments');
+    //     }
+    // });
 
     function validateForm(form){
         let isValid = true;
@@ -63,36 +72,62 @@ export function setupFormSubmissions(){
         return isValid;
     }
 
-    function submitForm(form,url){
-        const formData = new FormData(form);
+   async function submitForm(form,url, title, descr){
+        // const formData = new FormData(form);
+        // console.log(formData);
         const submitBtn = form.querySelector('.submit-btn');
 
         submitBtn.disabled = true;
         submitBtn.textContent = 'Отправка...';
+   
 
-        fetch(url,{
-            method: 'POST',
-            body: formData
-        })
-        .then(response =>{
-            if(!response.ok) throw new Error('Ошибка сети');
-            return response.json();
-        })
-        .then(data =>{
-            alert('Данные успешно сохранены!');
-            form.reset();
-            //Очишаем превью изображений
-            form.querySelectorAll('.file-preview').forEach(preview =>{
-                preview.innerHTML = '';
-            });
-        })
-        .catch(error => {
+        try {
+            const formData = {
+                title: title,
+                description: descr
+            }
+           
+
+            console.log(formData);
+
+            const {error: dbError} = await supabaseDB.from(url).insert(formData)
+
+            if(dbError) throw dbError;
+
+            alert('Данные успешно сохранены')
+            form.reset()
+
+        } catch (error) {
             console.error('Ошибка:', error);
-            alert('Произошла ошибка при отправке данных');
-        })
-        .finally(() => {
+                alert(`Произошла ошибка при отправке данных: ${error.message}`);
+        } finally {
             submitBtn.disabled = false;
-            submitBtn.textContent = 'Создать';
-        })
+           submitBtn.textContent = 'Создать';
+        }
+
+        // fetch(url,{
+        //     method: 'POST',
+        //     body: formData
+        // })
+        // .then(response =>{
+        //     if(!response.ok) throw new Error('Ошибка сети');
+        //     return response.json();
+        // })
+        // .then(data =>{
+        //     alert('Данные успешно сохранены!');
+        //     form.reset();
+        //     //Очишаем превью изображений
+        //     form.querySelectorAll('.file-preview').forEach(preview =>{
+        //         preview.innerHTML = '';
+        //     });
+        // })
+        // .catch(error => {
+        //     console.error('Ошибка:', error);
+        //     alert('Произошла ошибка при отправке данных');
+        // })
+        // .finally(() => {
+        //     submitBtn.disabled = false;
+        //     submitBtn.textContent = 'Создать';
+        // })
     }
 }

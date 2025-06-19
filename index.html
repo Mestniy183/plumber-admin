@@ -22,11 +22,11 @@
                 <form class="services__new-form">
                     <label class="services__new-label label">
                         Введите заголовок Услуги
-                        <input type="text" class="input-text" required>
+                        <input type="text" class="input-text services-title" required>
                     </label>
                     <label class="services__new-label label">
                         Введите описание Услуги
-                        <input type="text" class="input-text" required>
+                        <input type="text" class="input-text services-description" required>
                     </label>
                     <button class="services__new-button submit-btn" type="submit">Создать</button>
                     <div class="error-message"></div>
@@ -134,6 +134,8 @@
             </div>
         </section>
     </main>
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+
     <script type="module" src="js/index.js"></script>
 </body>
 </html>
