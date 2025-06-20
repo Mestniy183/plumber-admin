@@ -1,15 +1,12 @@
-const supabaseURL = 'https://voygehzdwnkrsowhseyh.supabase.co';
-const supabaseKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InZveWdlaHpkd25rcnNvd2hzZXloIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTAzMjI0ODYsImV4cCI6MjA2NTg5ODQ4Nn0.zf0QL4lGuSv1jT4cLPD2UGBEiv4JgSp0lVoLKC47AGc'
 
-const supabaseDB = supabase.createClient(supabaseURL, supabaseKey)
-
+import { supabaseDB } from "./api.js";
 
 export function setupFormSubmissions(){
     document.querySelector('.services__new-form').addEventListener('submit', async function(e){
         e.preventDefault();
         if(validateForm(this)){
-            const title = this.querySelector('.services-title')
-            const descr = this.querySelector('.services-description')
+            const title = this.querySelector('.services-title').value.trim();
+            const descr = this.querySelector('.services-description').value.trim();
             await submitForm(this, 'services', title, descr);
         }
    
@@ -86,9 +83,6 @@ export function setupFormSubmissions(){
                 title: title,
                 description: descr
             }
-           
-
-            console.log(formData);
 
             const {error: dbError} = await supabaseDB.from(url).insert(formData)
 
