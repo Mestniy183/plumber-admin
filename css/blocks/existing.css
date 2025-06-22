@@ -1,0 +1,55 @@
+.existing__list {
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+}
+
+.existing__item {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 15px;
+    margin-bottom: 10px;
+    background: #f9f9f9;
+    border-radius: 8px;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+}
+
+.existing__content{
+    flex-grow: 1;
+}
+
+.existing__content span {
+    font-size: 18px;
+    font-weight: 700;
+}
+
+.existing__content h3{
+    margin: 0 0 5px 0;
+    color: #333;
+}
+
+.existing__content p{
+    margin: 0;
+    color: #666;
+}
+
+.delete-btn{
+    background: #ff4444;
+    color: white;
+    border: none;
+    padding: 8px 15px;
+    border-radius: 4px;
+    cursor: pointer;
+    margin-left: 15px;
+}
+
+.delete-btn:hover{
+    background: #cc0000;
+}
+
+.error{
+    color: #ff4444;
+    padding: 10px;
+}
+

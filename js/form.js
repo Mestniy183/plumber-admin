@@ -1,5 +1,6 @@
 
 import { supabaseDB } from "./api.js";
+import { loadServer } from "./loadServer.js";
 
 export function setupFormSubmissions(){
     document.querySelector('.services__new-form').addEventListener('submit', async function(e){
@@ -8,6 +9,7 @@ export function setupFormSubmissions(){
             const title = this.querySelector('.services-title').value.trim();
             const descr = this.querySelector('.services-description').value.trim();
             await submitForm(this, 'services', title, descr);
+            await loadServer()
         }
    
     });
