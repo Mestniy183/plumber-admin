@@ -1,7 +1,16 @@
 import { supabaseDB } from "./api.js";
+import { getCurrentUser } from "./auth.js";
 
 
 export async function loadServer() {
+
+    //Проверяем авторизацию
+    const {data: { user}} = await getCurrentUser()
+    if(!user){
+        alert('Пожалуйста, войдите в систему')
+        return
+    }
+
     const servicesList = document.querySelector('.services__list');
      servicesList.innerHTML = '';
     
@@ -13,12 +22,20 @@ export async function loadServer() {
         services.forEach((service, index) => {
             const li = document.createElement('li');
             li.className = 'existing__item';
+
+            const isOwner = service.user_id === user.id
+            const adminControls = isOwner
+            ?`<button class="delete-btn" data-id="${service.id}">Удалить</button>`
+            :"";
+
+
             li.innerHTML = `
             <div class="existing__content">
             <span>${index + 1}</span>
                 <h3>${service.title}</h3>
+                ${service.user_id ? `<small>Автор: ${service.user_id === user.id ? 'Вы': 'Другой пользователь'}</small>` : ""}
             </div>
-            <button class="delete-btn" data-id="${service.id}">Удалить</button>`;
+            ${adminControls}`
             servicesList.appendChild(li);
         });
 

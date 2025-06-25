@@ -86,6 +86,13 @@ export function setupFormSubmissions(){
                 description: descr
             }
 
+            const { data, error } = await supabaseDB.auth.signInWithPassword({
+                email: "santechnik178@yandex.ru",
+                password: "qazwsx178"
+            })
+
+            
+
             const {error: dbError} = await supabaseDB.from(url).insert(formData)
 
             if(dbError) throw dbError;
