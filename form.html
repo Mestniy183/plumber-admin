@@ -1,0 +1,141 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Сантехник178 админка</title>
+    <link rel="stylesheet" href="css/style.css">
+</head>
+
+<body>
+    <main class="container">
+        <section class="services">
+            <h2>Услуги</h2>
+            <div class="existing">
+                <ul class="existing__list services__list">
+    
+                </ul>
+            </div>
+            <div class="services__new">
+                <h3>Создать новый элемент</h3>
+                <form class="services__new-form">
+                    <label class="services__new-label label">
+                        Введите заголовок Услуги
+                        <input type="text" class="input-text services-title" required>
+                    </label>
+                    <label class="services__new-label label">
+                        Введите описание Услуги
+                        <textarea type="text" class="input-text services-description" required></textarea>
+                    </label>
+                    <button class="services__new-button submit-btn" type="submit">Создать</button>
+                    <div class="error-message"></div>
+                </form>
+            </div>
+        </section>
+        <section class="example">
+            <h2>Создать пример работ</h2>
+            <div class="existing">
+                <ul class="example__list">
+    
+                </ul>
+            </div>
+            <div class="example__new">
+                <h3>Создать новый элемент</h3>
+                <form class="example__new-form">
+                    <div class="file-upload">
+                        <label class="drop-area">
+                            <span class="drop-mes">Первая картинка примера (До)</span>
+                            <input type="file" class="file-input example-photo-1" accept="image/*" required>
+                        </label>
+                        <div class="file-preview"></div>
+                    </div>
+                    <div class="file-upload">
+                        <label class="drop-area">
+                            <span class="drop-mes">Вторая картинка примера (После)</span>
+                            <input type="file" class="file-input example-photo-2" accept="image/*" required>
+                        </label>
+                        <div class="file-preview"></div>
+                    </div>
+                    <label class="example__new-label label">
+                        Введите заголовок примера
+                        <input type="text" class="input-text" required>
+                    </label>
+                    <label class="example__new-label label">
+                        Введите задачу
+                        <input type="text" class="input-text" required>
+                    </label>
+                    <label class="example__new-label label">
+                        Введите решение
+                        <input type="text" class="input-text" required>
+                    </label>
+                    <button class="example__new-button submit-btn" type="submit">Создать</button>
+                    <div class="error-message"></div>
+                </form>
+            </div>
+        </section>
+
+        <section class="question">
+            <h2>Вопрос-ответ</h2>
+            <div class="existing">
+                <ul class="question__list">
+    
+                </ul>
+            </div>
+            <div class="question__new">
+                <h3>Создать новый элемент</h3>
+                <form class="question__new-form">
+                    <label class="question__new-label label">
+                        Введите заголовок вопроса
+                        <input type="text" class="input-text" required>
+                    </label>
+                    <label class="question__new-label label">
+                        Введите ответ на вопрос
+                        <textarea type="text" class="input-text" required></textarea>
+                    </label>
+                    <button class="question__new-button submit-btn" type="submit">Создать</button>
+                    <div class="error-message"></div>
+                </form>
+            </div>
+        </section>
+
+        <section class="comment">
+            <h2>Создать пример работ</h2>
+            <div class="existing">
+                <ul class="comment__list">
+    
+                </ul>
+            </div>
+            <div class="comment__new">
+                <h3>Создать новый отзыв</h3>
+                <form class="comment__new-form">
+                    <div class="file-upload">
+                        <label class="drop-area">
+                            <span class="drop-mes">картинка отзыва</span>
+                            <input type="file" class="file-input example-photo-1" accept="image/*" required>
+                        </label>
+                        <div class="file-preview"></div>
+                    </div>
+                    <label class="comment__new-label label">
+                        Введите отзыв
+                        <input type="text" class="input-text" required>
+                    </label>
+                    <label class="comment__new-label label">
+                        Введите имя (Марина Иванова, )
+                        <input type="text" class="input-text" required>
+                    </label>
+                    <label class="comment__new-label label">
+                        Введите город и год (москва, 2025)
+                        <input type="text" class="input-text" required>
+                    </label>
+                    <button class="comment__new-button submit-btn" type="submit">Создать</button>
+                    <div class="error-message"></div>
+                </form>
+            </div>
+        </section>
+    </main>
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+
+    <script type="module" src="js/index.js"></script>
+</body>
+</html>

@@ -1,14 +1,23 @@
 
 import { supabaseDB } from "./api.js";
+import { getCurrentUser } from "./auth.js";
 import { loadServer } from "./loadServer.js";
 
 export function setupFormSubmissions(){
     document.querySelector('.services__new-form').addEventListener('submit', async function(e){
         e.preventDefault();
+
+
+        const {data: { user}} = await getCurrentUser();
+            if(!user){
+                alert('Пожалуйста, войдите в систему');
+                return
+            }
+
         if(validateForm(this)){
             const title = this.querySelector('.services-title').value.trim();
             const descr = this.querySelector('.services-description').value.trim();
-            await submitForm(this, 'services', title, descr);
+            await submitForm(this, 'services', title, descr, user.id);
             await loadServer()
         }
    
@@ -71,11 +80,8 @@ export function setupFormSubmissions(){
         return isValid;
     }
 
-   async function submitForm(form,url, title, descr){
-        // const formData = new FormData(form);
-        // console.log(formData);
+   async function submitForm(form,url, title, descr, userId){
         const submitBtn = form.querySelector('.submit-btn');
-
         submitBtn.disabled = true;
         submitBtn.textContent = 'Отправка...';
    
@@ -83,15 +89,9 @@ export function setupFormSubmissions(){
         try {
             const formData = {
                 title: title,
-                description: descr
+                description: descr,
+                user_id: userId
             }
-
-            const { data, error } = await supabaseDB.auth.signInWithPassword({
-                email: "santechnik178@yandex.ru",
-                password: "qazwsx178"
-            })
-
-            
 
             const {error: dbError} = await supabaseDB.from(url).insert(formData)
 
@@ -107,30 +107,5 @@ export function setupFormSubmissions(){
             submitBtn.disabled = false;
            submitBtn.textContent = 'Создать';
         }
-
-        // fetch(url,{
-        //     method: 'POST',
-        //     body: formData
-        // })
-        // .then(response =>{
-        //     if(!response.ok) throw new Error('Ошибка сети');
-        //     return response.json();
-        // })
-        // .then(data =>{
-        //     alert('Данные успешно сохранены!');
-        //     form.reset();
-        //     //Очишаем превью изображений
-        //     form.querySelectorAll('.file-preview').forEach(preview =>{
-        //         preview.innerHTML = '';
-        //     });
-        // })
-        // .catch(error => {
-        //     console.error('Ошибка:', error);
-        //     alert('Произошла ошибка при отправке данных');
-        // })
-        // .finally(() => {
-        //     submitBtn.disabled = false;
-        //     submitBtn.textContent = 'Создать';
-        // })
     }
 }

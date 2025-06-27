@@ -54,10 +54,14 @@ export async function loadServer() {
 
 async function deleteService(serviceId){
     try {
+        const {data: { user}} = await getCurrentUser();
+        if(!user) throw new Error("Требуется авторизация");
+
         const{error} = await supabaseDB
         .from('services')
         .delete()
-        .eq('id', serviceId);
+        .eq('id', serviceId)
+        .eq('user_id', user.id);
 
         if(error) throw error;
 
