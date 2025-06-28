@@ -69,6 +69,35 @@ button:hover{
     box-shadow: 0 5px 15px rgba(0,0,0,0.1);
 }
 
+.error-message{
+    color: #e74c3c;
+    background: #fadbd8;
+    padding: 15px;
+    border-radius: 8px;
+    margin-top: 20px;
+    text-align: center;
+    font-weight: 500;
+    opacity: 0;
+    transition: opacity 0.3 ease;
+}
+
+.error-message.show{
+    display: block;
+    opacity: 1;
+}
+
+@media(max-width: 480px){
+    .login-container{
+        padding: 30px 20px;
+    }
+
+    h2{
+        font-size: 24px;
+        margin-bottom: 20px;
+    }
+}
+
+
 
 
 
