@@ -23,14 +23,14 @@ h3 {
     margin: 0;
 }
 
-.h2{
+h2{
     color: #2c3e50;
     border-bottom: 2px solid #3498db;
     padding-bottom: 10px;
     margin-top: 0;
 }
 
-.h3{
+h3{
     color: #34495e;
     margin-top: 0;
 }
@@ -152,6 +152,27 @@ textarea {
 
 .remove-btn:hover{
     background: #cc0000;
+}
+
+.logout{
+    background: linear-gradient(to right, #667eea,#764ba2);
+    color: white;
+    border: none;
+    padding: 15px;
+    border-radius: 8px;
+    font-size: 16px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    margin-bottom: 20px;
+}
+
+.logout:hover{
+    background: linear-gradient(to right, #5a6fd1,#6a4298);
+    transform: translateY(-2px);
+    box-shadow: 0 5px 15px rgba(0,0,0,0.1);
 }
 
 @media (max-width:768px) {

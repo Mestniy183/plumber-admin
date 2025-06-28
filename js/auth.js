@@ -19,8 +19,14 @@ export async function loginUser(email, password) {
 }
 
 export async function logoutUser(){
-    const {error} = await supabaseDB.auth.signOut()
-    if(error) console.error('Logout error:', error)
+    const logoutBtn = document.querySelector('.logout');
+    logoutBtn.addEventListener('click', async function() {
+        const {error} = await supabaseDB.auth.signOut();
+        if(error) console.error('Logout error:', error);
+    })
+    
+
+   
 }
 
 export function getCurrentUser(){
