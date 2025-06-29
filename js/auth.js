@@ -22,6 +22,7 @@ export async function logoutUser(){
     const logoutBtn = document.querySelector('.logout');
     logoutBtn.addEventListener('click', async function() {
         const {error} = await supabaseDB.auth.signOut();
+        window.location.href = '/'
         if(error) console.error('Logout error:', error);
     })
     
