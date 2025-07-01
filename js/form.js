@@ -1,6 +1,6 @@
 
 import { supabaseDB } from "./api.js";
-import { getCurrentUser } from "./auth.js";
+import { getUser } from "./checkAuth.js";
 import { loadServer } from "./loadServer.js";
 
 export function setupFormSubmissions(){
@@ -81,17 +81,6 @@ export function setupFormSubmissions(){
             errorElement.style.display = 'block';
         }
         return isValid;
-    }
-
-    async function getUser() {
-        const {data: { user}} = await getCurrentUser();
-        if(!user){
-            alert('Пожалуйста, войдите в систему');
-            window.location.href = '/index.html'
-            return
-        }
-
-        return user;
     }
 
    async function submitForm(form,url, title, descr, userId){
