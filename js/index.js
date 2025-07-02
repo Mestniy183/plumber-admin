@@ -1,27 +1,19 @@
 
-import { loginUser, getSession, onAutStateChange } from './auth.js';
+import { loginUser, getSession, onAuthStateChange } from './auth.js';
 
 document.addEventListener('DOMContentLoaded', function(){
 
     getSession().then(({data}) =>{
-        console.log(data);
         if(data.session) {
             window.location.href = '/index.html'
-        }else{
-            window.location.href = '/login.html'
         }
     })
 
-    onAutStateChange((event, session) => {
-        console.log(event);
-        console.log(session);
+    onAuthStateChange((event, session) => {
         if (event === 'SIGNED_IN') {
             window.location.href = '/index.html' 
-        }else{
-            window.location.href = '/login.html'
         }
     })
-
 
     document.getElementById('loginForm').addEventListener('submit', async(e) =>{
         e.preventDefault()

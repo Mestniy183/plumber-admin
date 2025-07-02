@@ -1,5 +1,4 @@
 import { supabaseDB } from "./api.js";
-import { getCurrentUser } from "./auth.js";
 import { getUser } from "./checkAuth.js";
 
 

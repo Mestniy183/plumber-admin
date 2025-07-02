@@ -6,11 +6,19 @@ export async function loginUser(email, password) {
             email: email,
             password: password
         })
+
+        if(!error) {
+            await supabaseDB.auth.setSession({
+                access_token: data.session.access_token,
+                refresh_token: data.session.refresh_token
+            })
+        }
+
         if(error){
             console.error('Login error:', error.message)
             return {success: false, error: error.message}
         }
-        console.log('User logged in:', data.user)
+
         return {success: true, user: data.user}
     } catch (err) {
         console.error('Unexpected error:', err)
@@ -39,8 +47,8 @@ export async function getSession() {
     return { data, error}
 }
 
-export function onAutStateChange(callback) {
-    return supabaseDB.auth.onAutStateChange((event, session) =>{
+export function onAuthStateChange(callback) {
+    return supabaseDB.auth.onAuthStateChange((event, session) =>{
         callback(event, session)
     })
 }
