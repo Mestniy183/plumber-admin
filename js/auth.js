@@ -33,3 +33,14 @@ export async function logoutUser(){
 export function getCurrentUser(){
     return supabaseDB.auth.getUser()
 }
+
+export async function getSession() {
+    const { data, error } = await supabaseDB.auth.getSession()
+    return { data, error}
+}
+
+export function onAutStateChange(callback) {
+    return supabaseDB.auth.onAutStateChange((event, session) =>{
+        callback(event, session)
+    })
+}
