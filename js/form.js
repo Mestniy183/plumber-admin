@@ -1,7 +1,7 @@
 
 import { supabaseDB } from "./api.js";
 import { getUser } from "./checkAuth.js";
-import { loadServer } from "./loadServer.js";
+import { loadServer } from "./loadServer/loadServer.js";
 
 export function setupFormSubmissions(){
     document.querySelector('.services__new-form').addEventListener('submit', async function(e){
