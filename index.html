@@ -103,7 +103,7 @@
         <section class="comment">
             <h2>Создать пример работ</h2>
             <div class="existing">
-                <ul class="comment__list">
+                <ul class="comment__list existing__list">
     
                 </ul>
             </div>
@@ -113,21 +113,21 @@
                     <div class="file-upload">
                         <label class="drop-area">
                             <span class="drop-mes">картинка отзыва</span>
-                            <input type="file" class="file-input example-photo-1" accept="image/*" required>
+                            <input type="file" class="file-input comment__photo" accept="image/*" required>
                         </label>
                         <div class="file-preview"></div>
                     </div>
                     <label class="comment__new-label label">
                         Введите отзыв
-                        <input type="text" class="input-text" required>
+                        <textarea class="input-text comment__text" required></textarea>  
                     </label>
                     <label class="comment__new-label label">
                         Введите имя (Марина Иванова, )
-                        <input type="text" class="input-text" required>
+                        <input type="text" class="input-text comment__name" required>
                     </label>
                     <label class="comment__new-label label">
                         Введите город и год (москва, 2025)
-                        <input type="text" class="input-text" required>
+                        <input type="text" class="input-text comment__city" required>
                     </label>
                     <button class="comment__new-button submit-btn" type="submit">Создать</button>
                     <div class="error-message"></div>

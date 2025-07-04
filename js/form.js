@@ -32,20 +32,24 @@ export function setupFormSubmissions(){
         }
     });
 
+    document.querySelector('.comment__new-form').addEventListener('submit', async function(e){
+        e.preventDefault();
+        const user = await getUser()
+
+        if(validateForm(this)){
+            const comment = this.querySelector('.comment__text').value.trim();
+            const name = this.querySelector('.comment__name').value.trim();
+            const city = this.querySelector('.comment__city').value.trim();
+            const imageFile = this.querySelector('.comment__photo');
+
+            await submitCommentForm(this, comment, name, city, imageFile, user.id)
+        }
+    });
+
     // document.querySelector('.example__new-form').addEventListener('submit', function(e){
     //     e.preventDefault();
     //     if(validateForm(this)){
     //         submitForm(this, '/api/examples');
-    //     }
-    // });
-
-
-
-
-    // document.querySelector('.comment__new-form').addEventListener('submit', function(e){
-    //     e.preventDefault();
-    //     if(validateForm(this)){
-    //         submitForm(this, '/api/comments');
     //     }
     // });
 
@@ -109,6 +113,64 @@ export function setupFormSubmissions(){
         } finally {
             submitBtn.disabled = false;
            submitBtn.textContent = 'Создать';
+        }
+    }
+
+    async function submitCommentForm(form, comment, name, city, fileInput, userId) {
+        const submitBtn = form.querySelector('.submit-btn');
+        submitBtn.disabled = true;
+        submitBtn.textContent = 'Отправка...';
+
+        try {
+            let imageUrl = null;
+            if(fileInput.files && fileInput.files.length > 0) {
+                const file = fileInput.files[0];
+                const fileExt = file.name.split('.').pop();
+                const fileName = `${Date.now()}-${Math.random().toString(36).substring(2,9)}.${fileExt}`;
+                const filePath = `comment-plumber/${fileName}`;
+
+                //Загрузка файла
+                const {error: uploadError} = await supabaseDB.storage
+                .from('comment-plumber')
+                .upload(filePath, file);
+
+                if(uploadError) throw uploadError;
+
+                //Получаем публичный URL
+                const { data: { publicUrl}} = supabaseDB.storage
+                .from('comment-plumber')
+                .getPublicUrl(filePath);
+
+                imageUrl = publicUrl;
+            }
+
+            const formData = {
+                comment: comment,
+                name: name,
+                city: city,
+                image: imageUrl,
+                user_id: userId
+            }
+
+            const { error: dbError } = await supabaseDB
+            .from('comment')
+            .insert(formData);
+
+            if(dbError) throw dbError;
+
+            //Успешная отправка
+            alert('Отзыв успешно добавлен!');
+            form.reset();
+
+            //Очищаем превью изображения
+            const preview = form.querySelector('.file-preview');
+            preview.innerHTML = ''
+        } catch (error) {
+            console.error('Ошибка:', error);
+            alert(`Произошла ошибка при отправке данных: ${error.message}`);
+        } finally {
+            submitBtn.disabled = false;
+            submitBtn.textContent = 'Создать';
         }
     }
 }
