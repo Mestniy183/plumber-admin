@@ -125,18 +125,35 @@ export function setupFormSubmissions(){
             let imageUrl = null;
             if(fileInput.files && fileInput.files.length > 0) {
                 const file = fileInput.files[0];
-                const fileExt = file.name.split('.').pop();
+
+                console.log(await supabaseDB.storage.getBucket('comment'));
+
+                if(!(file instanceof File)){
+                    throw new error('Файл не допустимого типа')
+                }         
+
+                const fileExt = file.name.split('.').pop().toLowerCase();
+                const allowedExtensions = ['jpg', 'jpeg', 'png', 'gif', 'webp']
+
+                if(!allowedExtensions.includes(fileExt)) {
+                    throw new error('Неподдерживаемый формат файла')
+                }
+
+
                 const fileName = `${Date.now()}-${Math.random().toString(36).substring(2,9)}.${fileExt}`;
                 const filePath = `comment-plumber/${fileName}`;
 
                 //Загрузка файла
-                const {error: uploadError} = await supabaseDB.storage
-                .from('comment-plumber')
-                .upload(filePath, file);
+                const { error: uploadError} = await supabaseDB.storage.from('comment-plumber')
+                .upload(filePath, file, 
+                    {
+                        contentType: file.type, 
+                        upsert: false
+                    });
 
                 if(uploadError) throw uploadError;
 
-                //Получаем публичный URL
+                // Получаем публичный URL
                 const { data: { publicUrl}} = supabaseDB.storage
                 .from('comment-plumber')
                 .getPublicUrl(filePath);
@@ -144,23 +161,25 @@ export function setupFormSubmissions(){
                 imageUrl = publicUrl;
             }
 
-            const formData = {
-                comment: comment,
-                name: name,
-                city: city,
-                image: imageUrl,
-                user_id: userId
-            }
+            console.log(imageUrl);
 
-            const { error: dbError } = await supabaseDB
-            .from('comment')
-            .insert(formData);
+            // const formData = {
+            //     comment: comment,
+            //     name: name,
+            //     city: city,
+            //     image: imageUrl,
+            //     user_id: userId
+            // }
+
+            // const { error: dbError } = await supabaseDB
+            // .from('comment')
+            // .insert(formData);
 
             if(dbError) throw dbError;
 
             //Успешная отправка
             alert('Отзыв успешно добавлен!');
-            form.reset();
+            // form.reset();
 
             //Очищаем превью изображения
             const preview = form.querySelector('.file-preview');
