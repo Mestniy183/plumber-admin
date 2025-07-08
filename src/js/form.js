@@ -2,6 +2,7 @@ import { PutObjectCommand } from "@aws-sdk/client-s3";
 import { supabaseDB, client } from "./api.js";
 import { getUser } from "./checkAuth.js";
 import { loadServer } from "./loadServer/loadServer.js";
+import { readFileAsBuffer } from "./arrayBuffer.js";
 
 export function setupFormSubmissions() {
   console.log(client);
@@ -136,62 +137,58 @@ export function setupFormSubmissions() {
 
     try {
       let imageUrl = null;
+
       if (fileInput.files && fileInput.files.length > 0) {
         const file = fileInput.files[0];
 
-        console.log(await supabaseDB.storage.getBucket("comment"));
-
         if (!(file instanceof File)) {
-          throw new error("Файл не допустимого типа");
+          throw new Error("Файл не допустимого типа");
         }
 
         const fileExt = file.name.split(".").pop().toLowerCase();
         const allowedExtensions = ["jpg", "jpeg", "png", "gif", "webp"];
 
         if (!allowedExtensions.includes(fileExt)) {
-          throw new error("Неподдерживаемый формат файла");
+          throw new Error("Неподдерживаемый формат файла");
         }
 
         const fileName = `${Date.now()}-${Math.random().toString(36).substring(2, 9)}.${fileExt}`;
-        const filePath = `comment-plumber/${fileName}`;
+        const filePath = `comment-${fileName}`;
 
-        //Загрузка файла
-        const { error: uploadError } = await supabaseDB.storage
-          .from("comment-plumber")
-          .upload(filePath, file, {
-            contentType: file.type,
-            upsert: false,
-          });
+        const fileBuffer = await readFileAsBuffer(file);
 
-        if (uploadError) throw uploadError;
+        const params = {
+          Bucket: "comment",
+          Key: filePath,
+          Body: fileBuffer,
+          ContentType: file.type,
+        };
+        const command = new PutObjectCommand(params);
 
-        // Получаем публичный URL
-        const {
-          data: { publicUrl },
-        } = supabaseDB.storage.from("comment-plumber").getPublicUrl(filePath);
+        const data = await client.send(command);
 
-        imageUrl = publicUrl;
+        if (!data) throw new Error("Error send photo");
+
+        imageUrl = `https://voygehzdwnkrsowhseyh.storage.supabase.co/v1/object/public/comment/${filePath}`;
       }
 
-      console.log(imageUrl);
+      const formData = {
+        comment: comment,
+        name: name,
+        city: city,
+        image: imageUrl,
+        user_id: userId,
+      };
 
-      // const formData = {
-      //     comment: comment,
-      //     name: name,
-      //     city: city,
-      //     image: imageUrl,
-      //     user_id: userId
-      // }
-
-      // const { error: dbError } = await supabaseDB
-      // .from('comment')
-      // .insert(formData);
+      const { error: dbError } = await supabaseDB
+        .from("comment")
+        .insert(formData);
 
       if (dbError) throw dbError;
 
       //Успешная отправка
       alert("Отзыв успешно добавлен!");
-      // form.reset();
+      form.reset();
 
       //Очищаем превью изображения
       const preview = form.querySelector(".file-preview");
