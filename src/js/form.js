@@ -5,7 +5,6 @@ import { loadServer } from "./loadServer/loadServer.js";
 import { readFileAsBuffer } from "./arrayBuffer.js";
 
 export function setupFormSubmissions() {
-  console.log(client);
   document
     .querySelector(".services__new-form")
     .addEventListener("submit", async function (e) {
@@ -49,6 +48,8 @@ export function setupFormSubmissions() {
         const imageFile = this.querySelector(".comment__photo");
 
         await submitCommentForm(this, comment, name, city, imageFile, user.id);
+
+        await loadServer();
       }
     });
 
