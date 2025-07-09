@@ -26,11 +26,10 @@ export async function renderComment(comments, user) {
             `;
 
     commentsList.append(li);
-    commentsList.querySelectorAll(".image-container").forEach((imgCon) => {
-      console.log(imgCon);
-      console.log(comment.image);
-      renderImage(comment.image);
-    });
+    const imageContainer = li.querySelector(".image-container");
+    if (comment.image) {
+      renderImage(comment.image, imageContainer);
+    }
   });
 
   commentsList.querySelectorAll(".delete-btn").forEach((btn) => {

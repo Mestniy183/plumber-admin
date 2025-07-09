@@ -1,5 +1,7 @@
-export async function renderImage(imageUrl) {
-  const container = document.querySelector(".image-container");
+export async function renderImage(imageUrl, container) {
+  if (!container) {
+    container = document.querySelector(".image-container");
+  }
   container.innerHTML = "Загрузка...";
   try {
     const response = await fetch(imageUrl);
