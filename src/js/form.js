@@ -62,11 +62,19 @@ export function setupFormSubmissions() {
       if (validateForm(this)) {
         const imageBefore = this.querySelector(".example-photo-1");
         const imageAfter = this.querySelector(".example-photo-2");
-        const title = this.querySelector(".example-title");
-        const task = this.querySelector(".example-task");
-        const solution = this.querySelector(".example-solution");
-
-        submitForm(this, "/api/examples");
+        const title = this.querySelector(".example-title").value.trim();
+        const task = this.querySelector(".example-task").value.trim();
+        const solution = this.querySelector(".example-solution").value.trim();
+        await submitExampleForm(
+          this,
+          imageBefore,
+          imageAfter,
+          title,
+          task,
+          solution,
+          user.id
+        );
+        await loadServer();
       }
     });
 
@@ -229,31 +237,31 @@ export function setupFormSubmissions() {
     submitBtn.textContent = "Отправка...";
 
     try {
-      let imageUrl = null;
+      let imageUrl1 = null;
+      let imageUrl2 = null;
 
-      if (fileInput.files && fileInput.files.length > 0) {
+      const uploadFile = async (fileInput) => {
+        if (!fileInput || fileInput.files.length === 0) return null;
+
         const file = fileInput.files[0];
-
         if (!(file instanceof File)) {
           throw new Error("Файл не допустимого типа");
         }
-
         const fileExt = file.name.split(".").pop().toLowerCase();
         const allowedExtensions = ["jpg", "jpeg", "png", "gif", "webp"];
 
         if (!allowedExtensions.includes(fileExt)) {
           throw new Error("Неподдерживаемый формат файла");
         }
-
         const fileName = `${Date.now()}-${Math.random()
           .toString(36)
           .substring(2, 9)}.${fileExt}`;
-        const filePath = `comment-${fileName}`;
+        const filePath = `example-${fileName}`;
 
         const fileBuffer = await readFileAsBuffer(file);
 
         const params = {
-          Bucket: "comment",
+          Bucket: "example",
           Key: filePath,
           Body: fileBuffer,
           ContentType: file.type,
@@ -261,22 +269,31 @@ export function setupFormSubmissions() {
         const command = new PutObjectCommand(params);
 
         const data = await client.send(command);
+        if (!data) throw new Error("Ошибка при загрузке фото");
 
-        if (!data) throw new Error("Error send photo");
+        return `https://voygehzdwnkrsowhseyh.storage.supabase.co/v1/object/public/example/${filePath}`;
+      };
 
-        imageUrl = `https://voygehzdwnkrsowhseyh.storage.supabase.co/v1/object/public/comment/${filePath}`;
+      //Загружаем оба файла(если они есть)
+      if (imageBefore.files && imageBefore.files.length > 0) {
+        imageUrl1 = await uploadFile(imageBefore);
+      }
+
+      if (imageAfter.files && imageAfter.files.length > 0) {
+        imageUrl2 = await uploadFile(imageAfter);
       }
 
       const formData = {
-        comment: comment,
-        name: name,
-        city: city,
-        image: imageUrl,
+       imageBefore: imageUrl1,
+       imageAfter: imageUrl2,
+       title: title,
+       task: task,
+       solution: solution,
         user_id: userId,
       };
 
       const { error: dbError } = await supabaseDB
-        .from("comment")
+        .from("example")
         .insert(formData);
 
       if (dbError) throw dbError;
@@ -286,8 +303,8 @@ export function setupFormSubmissions() {
       form.reset();
 
       //Очищаем превью изображения
-      const preview = form.querySelector(".file-preview");
-      preview.innerHTML = "";
+      const previews = form.querySelectorAll(".file-preview");
+      previews.forEach(preview => preview.innerHTML = "");
     } catch (error) {
       console.error("Ошибка:", error);
       alert(`Произошла ошибка при отправке данных: ${error.message}`);

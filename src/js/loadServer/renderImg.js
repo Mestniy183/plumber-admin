@@ -1,8 +1,14 @@
 export async function renderImage(imageUrl, container) {
-  if (!container) {
-    container = document.querySelector(".image-container");
-  }
-  container.innerHTML = "Загрузка...";
+if(!container) return;
+
+//Создаём отдельный контейнер для каждой картинки
+const imageWrapper = document.createElement("div");
+imageWrapper.className = "image-wrapper";
+imageWrapper.style.margin = "10px 0";
+
+//Добавляем индикатор загрузки
+imageWrapper.innerHTML = "Загрузка...";
+container.appendChild(imageWrapper);
   try {
     const response = await fetch(imageUrl);
     if (!response.ok) {
@@ -16,11 +22,12 @@ export async function renderImage(imageUrl, container) {
     const img = new Image();
     img.src = blobUrl;
     img.style.maxWidth = "100%";
-    img.style.height = "100%";
+    img.style.maxHeight = "200px";
+    img.style.objectFit = "contain";
 
     img.onload = () => {
-      container.innerHTML = "";
-      container.append(img);
+      imageWrapper.innerHTML = "";
+      imageWrapper.append(img);
       URL.revokeObjectURL(blobUrl);
       //Освобождаем память
     };
@@ -29,6 +36,6 @@ export async function renderImage(imageUrl, container) {
       throw new Error("Ошибка загрузки изображения");
     };
   } catch (error) {
-    container.innerHTML = `Ошибка:${error.message}`;
+    imageWrapper.innerHTML = `Ошибка:${error.message}`;
   }
 }
