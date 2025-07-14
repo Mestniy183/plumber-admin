@@ -56,7 +56,17 @@
 }
 
 .image-container {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 10px;
+    margin-top: 10px;
     width: 150px;
-    height: 150px;
 }
 
+
+.image-wrapper {
+    border: 1px solid #ddd;
+    padding: 5px;
+    border-radius: 4px;
+    background: f9f9f9;
+}
