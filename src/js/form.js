@@ -299,7 +299,7 @@ export function setupFormSubmissions() {
       if (dbError) throw dbError;
 
       //Успешная отправка
-      alert("Отзыв успешно добавлен!");
+      alert("Пример успешно добавлен!");
       form.reset();
 
       //Очищаем превью изображения
