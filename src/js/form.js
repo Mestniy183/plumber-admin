@@ -155,7 +155,7 @@ export function setupFormSubmissions() {
     submitBtn.textContent = "Отправка...";
 
     try {
-      let imageUrl = null;
+      let imageUrl = {};
 
       if (fileInput.files && fileInput.files.length > 0) {
         const file = fileInput.files[0];
@@ -170,6 +170,12 @@ export function setupFormSubmissions() {
         if (!allowedExtensions.includes(fileExt)) {
           throw new Error("Неподдерживаемый формат файла");
         }
+
+        const versions = {
+          "1x": 366, //оригинальный размер
+          "2x": 732, //2x размер
+          "3x": 1098, //3x размер
+        };
 
         const fileName = `${Date.now()}-${Math.random()
           .toString(36)
@@ -284,11 +290,11 @@ export function setupFormSubmissions() {
       }
 
       const formData = {
-       imageBefore: imageUrl1,
-       imageAfter: imageUrl2,
-       title: title,
-       task: task,
-       solution: solution,
+        imageBefore: imageUrl1,
+        imageAfter: imageUrl2,
+        title: title,
+        task: task,
+        solution: solution,
         user_id: userId,
       };
 
@@ -304,7 +310,7 @@ export function setupFormSubmissions() {
 
       //Очищаем превью изображения
       const previews = form.querySelectorAll(".file-preview");
-      previews.forEach(preview => preview.innerHTML = "");
+      previews.forEach((preview) => (preview.innerHTML = ""));
     } catch (error) {
       console.error("Ошибка:", error);
       alert(`Произошла ошибка при отправке данных: ${error.message}`);
