@@ -19,18 +19,22 @@ export async function deleteItem(itemId, tableName, itemName) {
 
     if (fetchError) throw fetchError;
 
-    if (item.image) {
-      const key = extractKeyFromUrl(item.image, "comment");
+    if (item.image && item.image_2x && item.image_3x) {
+      const imagesComment = [item.image, item.image_2x, item.image_3x];
 
-      const deleteParams = {
-        Bucket: "comment",
-        Key: key,
-      };
-      try {
-        const deleteCommand = new DeleteObjectCommand(deleteParams);
-        await client.send(deleteCommand);
-      } catch (error) {
-        console.error("Ошибка удаления картинки");
+      for (const image of imagesComment) {
+        const key = extractKeyFromUrl(image, "comment");
+
+        const deleteParams = {
+          Bucket: "comment",
+          Key: key,
+        };
+        try {
+          const deleteCommand = new DeleteObjectCommand(deleteParams);
+          await client.send(deleteCommand);
+        } catch (error) {
+          console.error("Ошибка удаления картинки");
+        }
       }
     }
 

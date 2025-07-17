@@ -3,6 +3,10 @@ import { supabaseDB, client } from "./api.js";
 import { getUser } from "./checkAuth.js";
 import { loadServer } from "./loadServer/loadServer.js";
 import { readFileAsBuffer } from "./arrayBuffer.js";
+import {
+  createImageFromFile,
+  resizeConvertToWebp,
+} from "./createImageFromFile.js";
 
 export function setupFormSubmissions() {
   document
@@ -155,7 +159,7 @@ export function setupFormSubmissions() {
     submitBtn.textContent = "Отправка...";
 
     try {
-      let imageUrl = {};
+      let imageUrls = {};
 
       if (fileInput.files && fileInput.files.length > 0) {
         const file = fileInput.files[0];
@@ -177,33 +181,47 @@ export function setupFormSubmissions() {
           "3x": 1098, //3x размер
         };
 
-        const fileName = `${Date.now()}-${Math.random()
-          .toString(36)
-          .substring(2, 9)}.${fileExt}`;
-        const filePath = `comment-${fileName}`;
+        const img = await createImageFromFile(file);
 
-        const fileBuffer = await readFileAsBuffer(file);
+        //Обрабатываем каждую версию
+        for (const [version, size] of Object.entries(versions)) {
+          //Изменяем размер изображения и конвертируем в webp
+          const resizedImageBlob = await resizeConvertToWebp(img, size, size);
 
-        const params = {
-          Bucket: "comment",
-          Key: filePath,
-          Body: fileBuffer,
-          ContentType: file.type,
-        };
-        const command = new PutObjectCommand(params);
+          //Генерируем уникальное имя файла для каждой версии
+          const fileName = `${Date.now()}-${Math.random()
+            .toString(36)
+            .substring(2, 9)}-${version}.webp`;
 
-        const data = await client.send(command);
+          const filePath = `comment-${fileName}`;
 
-        if (!data) throw new Error("Error send photo");
+          const fileBuffer = await readFileAsBuffer(resizedImageBlob);
 
-        imageUrl = `https://voygehzdwnkrsowhseyh.storage.supabase.co/v1/object/public/comment/${filePath}`;
+          const params = {
+            Bucket: "comment",
+            Key: filePath,
+            Body: fileBuffer,
+            ContentType: "image/webp",
+          };
+          const command = new PutObjectCommand(params);
+
+          const data = await client.send(command);
+
+          if (!data) throw new Error("Error send photo");
+
+          imageUrls[
+            version
+          ] = `https://voygehzdwnkrsowhseyh.storage.supabase.co/v1/object/public/comment/${filePath}`;
+        }
       }
 
       const formData = {
         comment: comment,
         name: name,
         city: city,
-        image: imageUrl,
+        image: imageUrls["1x"], //основное изображение
+        image_2x: imageUrls["2x"], //2x версия
+        image_3x: imageUrls["3x"], //3x
         user_id: userId,
       };
 
