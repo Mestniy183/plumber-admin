@@ -261,41 +261,63 @@ export function setupFormSubmissions() {
     submitBtn.textContent = "Отправка...";
 
     try {
-      let imageUrl1 = null;
-      let imageUrl2 = null;
+      let imageUrlsBefore = {};
+      let imageUrlsAfter = {};
 
-      const uploadFile = async (fileInput) => {
+      const uploadAndProcessImage = async (fileInput, prefix) => {
         if (!fileInput || fileInput.files.length === 0) return null;
 
         const file = fileInput.files[0];
         if (!(file instanceof File)) {
           throw new Error("Файл не допустимого типа");
         }
+
         const fileExt = file.name.split(".").pop().toLowerCase();
         const allowedExtensions = ["jpg", "jpeg", "png", "gif", "webp"];
 
         if (!allowedExtensions.includes(fileExt)) {
           throw new Error("Неподдерживаемый формат файла");
         }
-        const fileName = `${Date.now()}-${Math.random()
-          .toString(36)
-          .substring(2, 9)}.${fileExt}`;
-        const filePath = `example-${fileName}`;
 
-        const fileBuffer = await readFileAsBuffer(file);
-
-        const params = {
-          Bucket: "example",
-          Key: filePath,
-          Body: fileBuffer,
-          ContentType: file.type,
+        const versions = {
+          "1x": { width: 533, height: 531 }, // оригинальный размер
+          "2x": { width: 1066, height: 1062 }, // 2x размер
+          "3x": { width: 1599, height: 1593 }, // 3x размер
         };
-        const command = new PutObjectCommand(params);
 
-        const data = await client.send(command);
-        if (!data) throw new Error("Ошибка при загрузке фото");
+        const img = await createImageFromFile(file);
+        const resultUrls = {};
 
-        return `https://voygehzdwnkrsowhseyh.storage.supabase.co/v1/object/public/example/${filePath}`;
+        for (const [version, size] of Object.entries(versions)) {
+          //Изменяем размер изображения и конвертируем в webp
+          const resizedImageBlob = await resizeConvertToWebp(
+            img,
+            size.width,
+            size.height
+          );
+          //Генерируем уникальное имя файла
+          const fileName = `${prefix}-${Date.now()}-${Math.random()
+            .toString(36)
+            .substring(2, 9)}-${version}.webp`;
+
+          const filePath = `example-${fileName}`;
+          const fileBuffer = await readFileAsBuffer(resizedImageBlob);
+
+          const params = {
+            Bucket: "example",
+            Key: filePath,
+            Body: fileBuffer,
+            ContentType: "image/webp",
+          };
+          const command = new PutObjectCommand(params);
+
+          await client.send(command);
+          resultUrls[
+            version
+          ] = `https://voygehzdwnkrsowhseyh.storage.supabase.co/v1/object/public/example/${filePath}`;
+        }
+
+        return resultUrls;
       };
 
       //Загружаем оба файла(если они есть)
