@@ -321,21 +321,25 @@ export function setupFormSubmissions() {
       };
 
       //Загружаем оба файла(если они есть)
-      if (imageBefore.files && imageBefore.files.length > 0) {
-        imageUrl1 = await uploadFile(imageBefore);
-      }
+ if(imageBefore.files && imageBefore.files.length > 0) {
+  imageUrlsBefore = await uploadAndProcessImage(imageBefore, "before");
+ }
 
-      if (imageAfter.files && imageAfter.files.length > 0) {
-        imageUrl2 = await uploadFile(imageAfter);
-      }
+ if(imageAfter.files && imageAfter.files.length > 0) {
+  imageUrlsAfter = await uploadAndProcessImage(imageAfter, "after");
+ }
 
       const formData = {
-        imageBefore: imageUrl1,
-        imageAfter: imageUrl2,
-        title: title,
-        task: task,
-        solution: solution,
-        user_id: userId,
+       imageBefore: imageUrlsBefore['1x'] || null,
+       imageBefore_2x: imageUrlsBefore['2x'] || null,
+       imageBefore_3x: imageUrlsBefore['3x'] || null,
+       imageAfter: imageUrlsAfter['1x'] || null,
+       imageAfter_2x: imageUrlsAfter['2x'] || null,
+       imageAfter_3x: imageUrlsAfter['3x'] || null,
+       title: title,
+       task: task,
+       solution: solution,
+       user_id: userId,
       };
 
       const { error: dbError } = await supabaseDB

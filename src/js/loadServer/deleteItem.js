@@ -38,8 +38,8 @@ export async function deleteItem(itemId, tableName, itemName) {
       }
     }
 
-    if (item.imageBefore && item.imageAfter) {
-      const imagesExample = [item.imageBefore, item.imageAfter];
+    if (item.imageBefore && item.imageAfter && item.imageBefore_2x && item.imageBefore_3x && item.imageAfter_2x && item.imageAfter_3x) {
+      const imagesExample = [item.imageBefore, item.imageAfter, item.imageBefore_2x, item.imageBefore_3x, item.imageAfter_2x, item.imageAfter_3x];
 
       for (const image of imagesExample) {
         const key = extractKeyFromUrl(image, "example");
