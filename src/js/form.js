@@ -179,6 +179,10 @@ export function setupFormSubmissions() {
           "1x": 366, //оригинальный размер
           "2x": 732, //2x размер
           "3x": 1098, //3x размер
+          mobile_1: { width: 366, height: 250 }, //Мобильная версии 1
+          mobile_1_2x: { width: 732, height: 500 }, //2x(732X500)
+          mobile_2: { width: 366, height: 200 }, //1x(366X200)
+          mobile_2_2x: { width: 732, height: 400 }, //2x()
         };
 
         const img = await createImageFromFile(file);
@@ -283,6 +287,8 @@ export function setupFormSubmissions() {
           "1x": { width: 533, height: 531 }, // оригинальный размер
           "2x": { width: 1066, height: 1062 }, // 2x размер
           "3x": { width: 1599, height: 1593 }, // 3x размер
+          mobile_1x: { width: 449, height: 440 }, //Мобильная версия(1x)
+          mobile_2x: { width: 898, height: 880 }, //Мобильная версия(2x)
         };
 
         const img = await createImageFromFile(file);
@@ -321,25 +327,29 @@ export function setupFormSubmissions() {
       };
 
       //Загружаем оба файла(если они есть)
- if(imageBefore.files && imageBefore.files.length > 0) {
-  imageUrlsBefore = await uploadAndProcessImage(imageBefore, "before");
- }
+      if (imageBefore.files && imageBefore.files.length > 0) {
+        imageUrlsBefore = await uploadAndProcessImage(imageBefore, "before");
+      }
 
- if(imageAfter.files && imageAfter.files.length > 0) {
-  imageUrlsAfter = await uploadAndProcessImage(imageAfter, "after");
- }
+      if (imageAfter.files && imageAfter.files.length > 0) {
+        imageUrlsAfter = await uploadAndProcessImage(imageAfter, "after");
+      }
 
       const formData = {
-       imageBefore: imageUrlsBefore['1x'] || null,
-       imageBefore_2x: imageUrlsBefore['2x'] || null,
-       imageBefore_3x: imageUrlsBefore['3x'] || null,
-       imageAfter: imageUrlsAfter['1x'] || null,
-       imageAfter_2x: imageUrlsAfter['2x'] || null,
-       imageAfter_3x: imageUrlsAfter['3x'] || null,
-       title: title,
-       task: task,
-       solution: solution,
-       user_id: userId,
+        imageBefore: imageUrlsBefore["1x"] || null,
+        imageBefore_2x: imageUrlsBefore["2x"] || null,
+        imageBefore_3x: imageUrlsBefore["3x"] || null,
+        imageBefore_mobile: imageUrlsBefore["mobile_1x"] || null,
+        imageBefore_mobile_2x: imageBefore["mobile_2x"] || null,
+        imageAfter: imageUrlsAfter["1x"] || null,
+        imageAfter_2x: imageUrlsAfter["2x"] || null,
+        imageAfter_3x: imageUrlsAfter["3x"] || null,
+        imageAfter_mobile: imageUrlsAfter["mobile_1x"] || null,
+        imageAfter_mobile_2x: imageUrlsAfter["mobile_2x"] || null,
+        title: title,
+        task: task,
+        solution: solution,
+        user_id: userId,
       };
 
       const { error: dbError } = await supabaseDB
