@@ -176,9 +176,9 @@ export function setupFormSubmissions() {
         }
 
         const versions = {
-          "1x": 366, //оригинальный размер
-          "2x": 732, //2x размер
-          "3x": 1098, //3x размер
+          "1x": { width: 366, height: 366 }, //1x(366*366)
+          "2x": { width: 732, height: 732 }, //2x(732*732)
+          "3x": { width: 1098, height: 1098 }, //3x размер
           mobile_1: { width: 366, height: 250 }, //Мобильная версии 1
           mobile_1_2x: { width: 732, height: 500 }, //2x(732X500)
           mobile_2: { width: 366, height: 200 }, //1x(366X200)
@@ -190,7 +190,11 @@ export function setupFormSubmissions() {
         //Обрабатываем каждую версию
         for (const [version, size] of Object.entries(versions)) {
           //Изменяем размер изображения и конвертируем в webp
-          const resizedImageBlob = await resizeConvertToWebp(img, size, size);
+          const resizedImageBlob = await resizeConvertToWebp(
+            img,
+            size.width,
+            size.height
+          );
 
           //Генерируем уникальное имя файла для каждой версии
           const fileName = `${Date.now()}-${Math.random()
@@ -226,6 +230,12 @@ export function setupFormSubmissions() {
         image: imageUrls["1x"], //основное изображение
         image_2x: imageUrls["2x"], //2x версия
         image_3x: imageUrls["3x"], //3x
+        //Мобильная версия (366*250 и 2х)
+        image_mobile_1: imageUrls["mobile_1"], //366x250(1x)
+        image_mobile_1_2x: imageUrls["mobile_1_2x"], //732x300(2x)
+        //Мобильная версия (366Х200 и 2х)
+        image_mobile_2: imageUrls["mobile_2"], //366x200(1x)
+        image_mobile_2_2x: imageUrls["mobile_2_2x"], //732x400(2x)
         user_id: userId,
       };
 

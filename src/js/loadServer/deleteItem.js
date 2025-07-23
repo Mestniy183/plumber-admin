@@ -19,54 +19,60 @@ export async function deleteItem(itemId, tableName, itemName) {
 
     if (fetchError) throw fetchError;
 
-    if (item.image && item.image_2x && item.image_3x) {
-      const imagesComment = [item.image, item.image_2x, item.image_3x];
+    console.log(item);
 
-      for (const image of imagesComment) {
-        const key = extractKeyFromUrl(image, "comment");
-
-        const deleteParams = {
-          Bucket: "comment",
-          Key: key,
-        };
-        try {
-          const deleteCommand = new DeleteObjectCommand(deleteParams);
-          await client.send(deleteCommand);
-        } catch (error) {
-          console.error("Ошибка удаления картинки");
-        }
-      }
+    for (const i in item) {
+      console.log(i.includes("image"));
     }
 
-    if (item.imageBefore && item.imageAfter && item.imageBefore_2x && item.imageBefore_3x && item.imageAfter_2x && item.imageAfter_3x) {
-      const imagesExample = [item.imageBefore, item.imageAfter, item.imageBefore_2x, item.imageBefore_3x, item.imageAfter_2x, item.imageAfter_3x];
+    // if (item.image && item.image_2x && item.image_3x) {
+    //   const imagesComment = [item.image, item.image_2x, item.image_3x];
 
-      for (const image of imagesExample) {
-        const key = extractKeyFromUrl(image, "example");
+    //   for (const image of imagesComment) {
+    //     const key = extractKeyFromUrl(image, "comment");
 
-        const deleteParams = {
-          Bucket: "example",
-          Key: key,
-        };
-        try {
-          const deleteCommand = new DeleteObjectCommand(deleteParams);
-          await client.send(deleteCommand);
-        } catch (error) {
-          console.error("Ошибка удаления картинки");
-        }
-      }
-    }
+    //     const deleteParams = {
+    //       Bucket: "comment",
+    //       Key: key,
+    //     };
+    //     try {
+    //       const deleteCommand = new DeleteObjectCommand(deleteParams);
+    //       await client.send(deleteCommand);
+    //     } catch (error) {
+    //       console.error("Ошибка удаления картинки");
+    //     }
+    //   }
+    // }
 
-    const { error } = await supabaseDB
-      .from(tableName)
-      .delete()
-      .eq("id", itemId)
-      .eq("user_id", user.id);
+    // if (item.imageBefore && item.imageAfter && item.imageBefore_2x && item.imageBefore_3x && item.imageAfter_2x && item.imageAfter_3x) {
+    //   const imagesExample = [item.imageBefore, item.imageAfter, item.imageBefore_2x, item.imageBefore_3x, item.imageAfter_2x, item.imageAfter_3x];
 
-    if (error) throw error;
+    //   for (const image of imagesExample) {
+    //     const key = extractKeyFromUrl(image, "example");
+
+    //     const deleteParams = {
+    //       Bucket: "example",
+    //       Key: key,
+    //     };
+    //     try {
+    //       const deleteCommand = new DeleteObjectCommand(deleteParams);
+    //       await client.send(deleteCommand);
+    //     } catch (error) {
+    //       console.error("Ошибка удаления картинки");
+    //     }
+    //   }
+    // }
+
+    // const { error } = await supabaseDB
+    //   .from(tableName)
+    //   .delete()
+    //   .eq("id", itemId)
+    //   .eq("user_id", user.id);
+
+    // if (error) throw error;
 
     //Обновляем список после удаления
-    await loadServer();
+    // await loadServer();
     alert(
       `${itemName.charAt(0).toUpperCase() + itemName.slice(1)} Успешно удалён`
     );
