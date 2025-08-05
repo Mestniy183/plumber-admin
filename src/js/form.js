@@ -216,10 +216,9 @@ export function setupFormSubmissions() {
           const data = await client.send(command);
 
           if (!data) throw new Error("Error send photo");
-
           imageUrls[
             version
-          ] = `https://voygehzdwnkrsowhseyh.storage.supabase.co/v1/object/public/comment/${filePath}`;
+          ] = `https://voygehzdwnkrsowhseyh.supabase.co/storage/v1/object/public/comment/${filePath}`;
         }
       }
 
@@ -330,7 +329,7 @@ export function setupFormSubmissions() {
           await client.send(command);
           resultUrls[
             version
-          ] = `https://voygehzdwnkrsowhseyh.storage.supabase.co/v1/object/public/example/${filePath}`;
+          ] = `https://voygehzdwnkrsowhseyh.supabase.co/storage/v1/object/public/example/${filePath}`;
         }
 
         return resultUrls;

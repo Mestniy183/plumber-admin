@@ -20,7 +20,13 @@ export async function renderComment(comments, user) {
             <h3>${comment.comment}</h3>
             <div class="image-container">
             </div>
-            ${comment.user_id ? `<small>Автор: ${comment.user_id === user.id ? "Вы" : "Другой пользователь"}</small>` : ""}
+            ${
+              comment.user_id
+                ? `<small>Автор: ${
+                    comment.user_id === user.id ? "Вы" : "Другой пользователь"
+                  }</small>`
+                : ""
+            }
             </div>
             ${adminControls}
             `;
@@ -34,7 +40,7 @@ export async function renderComment(comments, user) {
 
   commentsList.querySelectorAll(".delete-btn").forEach((btn) => {
     btn.addEventListener("click", () =>
-      deleteItem(btn.dataset.id, "comment", "Отзыв"),
+      deleteItem(btn.dataset.id, "comment", "Отзыв")
     );
   });
 }
