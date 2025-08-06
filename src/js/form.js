@@ -349,7 +349,7 @@ export function setupFormSubmissions() {
         imageBefore_2x: imageUrlsBefore["2x"] || null,
         imageBefore_3x: imageUrlsBefore["3x"] || null,
         imageBefore_mobile: imageUrlsBefore["mobile_1x"] || null,
-        imageBefore_mobile_2x: imageBefore["mobile_2x"] || null,
+        imageBefore_mobile_2x: imageUrlsBefore["mobile_2x"] || null,
         imageAfter: imageUrlsAfter["1x"] || null,
         imageAfter_2x: imageUrlsAfter["2x"] || null,
         imageAfter_3x: imageUrlsAfter["3x"] || null,

@@ -20,8 +20,9 @@ export async function deleteItem(itemId, tableName, itemName) {
     if (fetchError) throw fetchError;
 
     for (const key in item) {
-      if (key.includes("image") && item[key]) {
+      if (key.includes("image")) {
         const imageUrl = item[key];
+
         try {
           const bucket = tableName === "comment" ? "comment" : "example";
           const imageKey = extractKeyFromUrl(imageUrl, bucket);
@@ -33,7 +34,6 @@ export async function deleteItem(itemId, tableName, itemName) {
 
           const deleteCommand = new DeleteObjectCommand(deleteParams);
           await client.send(deleteCommand);
-          console.log(`Удалено изображение: ${imageUrl}`);
         } catch (error) {
           console.error(`Ошибка удаления изображения ${key}:`, error);
         }
@@ -59,6 +59,27 @@ export async function deleteItem(itemId, tableName, itemName) {
   }
 }
 function extractKeyFromUrl(url, bucket) {
-  const parts = url.split(`/object/public/${bucket}/`);
-  return parts[1] || url;
+  try {
+    if (!url.includes("http")) return url;
+    //Удаляем возможные параметры запроса
+    const cleanUrl = url.split("?")[0];
+
+    //Разные варианты разделителей
+    const patterns = [
+      `/storage/v1/object/public/${bucket}/`,
+      `/object/public/${bucket}/`,
+      `/storage/v1/object/authenticated/${bucket}/`,
+    ];
+    for (const pattern of patterns) {
+      if (cleanUrl.includes(pattern)) {
+        return cleanUrl.split(pattern)[1];
+      }
+    }
+    //Если не один паттерн не подошёл, попробуем извлечь последнюю часть URL
+    const parts = cleanUrl.split("/");
+    return parts[parts.length - 1];
+  } catch (error) {
+    console.error(`Error extracting key from URL:`, error);
+    return url; //Возвращаем оригиеальный url
+  }
 }
