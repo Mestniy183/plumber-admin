@@ -20,7 +20,7 @@ export const client = new S3Client({
   region: "eu-west-2",
   endpoint: "https://voygehzdwnkrsowhseyh.supabase.co/storage/v1/s3",
   credentials: {
-    accessKeyId: process.env.VITE_ID,
-    secretAccessKey: process.env.VITE_SECRET,
+    accessKeyId: import.meta.env.VITE_ID,
+    secretAccessKey: import.meta.env.VITE_SECRET,
   },
 });
