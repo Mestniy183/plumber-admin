@@ -3,15 +3,19 @@ import { renderServices } from "./renderServices.js";
 import { supabaseDB } from "../api.js";
 import { getUser } from "../checkAuth.js";
 import { renderComment } from "./renderComment.js";
-import { renderExample } from "./renderExample.js"
+import { renderExample } from "./renderExample.js";
 
 export async function loadServer() {
-  //Проверяем авторизацию
-  const user = await getUser();
-
   try {
     // const { data: services, error } = await supabaseDB.from('services').select('*').order('created_at', { ascending: true });
-    const [servicesResult, questiosnResult, commentResult, exampleResult] = await Promise.all([
+    const [
+      user,
+      servicesResult,
+      questiosnResult,
+      commentResult,
+      exampleResult,
+    ] = await Promise.all([
+      getUser(),
       supabaseDB
         .from("services")
         .select("*")
@@ -24,36 +28,42 @@ export async function loadServer() {
         .from("comment")
         .select("*")
         .order("created_at", { assending: true }),
-        supabaseDB
+      supabaseDB
         .from("example")
         .select("*")
         .order("created_at", { assending: true }),
     ]);
-    
 
-    if (servicesResult.error) throw servicesResult.error;
-    if (questiosnResult.error) throw questiosnResult.error;
-    if (commentResult.error) throw commentResult.error;
-    if (exampleResult.error) throw exampleResult.error;
+    //Проверяем ошибки одним блоком
+    const errors = [
+      servicesResult.error,
+      questiosnResult.error,
+      commentResult.error,
+      exampleResult.error,
+    ].filter(Boolean);
 
-    const services = servicesResult.data;
-    const examples = exampleResult.data;
-    const questions = questiosnResult.data;
-    const comments = commentResult.data;
+    if (errors.length > 0) throw errors[0];
 
-    renderServices(services, user);
-    renderQuestions(questions, user);
-    renderComment(comments, user);
-    renderExample(examples, user);
+    await Promise.all([
+      renderServices(servicesResult.data, user),
+      renderQuestions(questiosnResult.data, user),
+      renderComment(commentResult.data, user),
+      renderExample(exampleResult.data, user),
+    ]);
   } catch (error) {
     console.error("Ошибка загрузки услуг:", error);
-    document.querySelector(".services__list").innerHTML =
-      '<li class="error">Ошибка загрузки данных</li>';
-    document.querySelector(".question__list").innerHTML =
-      '<li class="error">Ошибка загрузки данных</li>';
-    document.querySelector(".comment__list").innerHTML =
-      '<li class="error">Ошибка загрузки данных</li>';
-      document.querySelector(".example__list").innerHTML =
-      '<li class="error">Ошибка загрузки данных</li>';
+    //Устанавливаем сообщения об ошибках для всех компонентов
+    const errorHTML = '<li class="error">Ошибка загрузки данных</li>';
+    const containers = [
+      ".services__list",
+      ".question__list",
+      ".comment__list",
+      ".example__list",
+    ];
+
+    containers.forEach((selector) => {
+      const element = document.querySelector(selector);
+      if (element) element.innerHTML = errorHTML;
+    });
   }
 }
