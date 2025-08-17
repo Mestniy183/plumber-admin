@@ -27,48 +27,34 @@ export function setupFormSubmissions() {
     };
   });
 
-  document
-    .querySelector(".comment__new-form")
-    .addEventListener("submit", async function (e) {
-      e.preventDefault();
-      const user = await getUser();
+  setupFormHandler(
+    "comment__new-form",
+    "comments",
+    async (form) => {
+      return {
+        comment: form.querySelector(".comment__text").value.trim(),
+        name: form.querySelector(".comment__name").value.trim(),
+        city: form.querySelector(".comment__city").value.trim(),
+        imageFile: form.querySelector(".comment__photo").value.trim(),
+      };
+    },
+    submitCommentForm
+  );
 
-      if (validateForm(this)) {
-        const comment = this.querySelector(".comment__text").value.trim();
-        const name = this.querySelector(".comment__name").value.trim();
-        const city = this.querySelector(".comment__city").value.trim();
-        const imageFile = this.querySelector(".comment__photo");
-
-        await submitCommentForm(this, comment, name, city, imageFile, user.id);
-
-        await loadServer();
-      }
-    });
-
-  document
-    .querySelector(".example__new-form")
-    .addEventListener("submit", async function (e) {
-      e.preventDefault();
-      const user = await getUser();
-
-      if (validateForm(this)) {
-        const imageBefore = this.querySelector(".example-photo-1");
-        const imageAfter = this.querySelector(".example-photo-2");
-        const title = this.querySelector(".example-title").value.trim();
-        const task = this.querySelector(".example-task").value.trim();
-        const solution = this.querySelector(".example-solution").value.trim();
-        await submitExampleForm(
-          this,
-          imageBefore,
-          imageAfter,
-          title,
-          task,
-          solution,
-          user.id
-        );
-        await loadServer();
-      }
-    });
+  setupFormHandler(
+    "example__new-form",
+    "examples",
+    async (form) => {
+      return {
+        imageBefore: form.querySelector(".example-photo-1"),
+        imageAfter: form.querySelector(".example-photo-2"),
+        title: form.querySelector(".example-title").value.trim(),
+        task: form.querySelector(".example-task").value.trim(),
+        solution: form.querySelector(".example-solution").value.trim(),
+      };
+    },
+    submitExampleForm
+  );
 }
 
 function setupFormHandler(
@@ -95,6 +81,7 @@ function validateForm(form) {
   let isValid = true;
   const errorElement = form.querySelector(".error-message");
   errorElement.style.display = "none";
+
   const requiredInputs = form.querySelectorAll("[required]");
   requiredInputs.forEach((input) => {
     if (!input.value.trim()) {
@@ -105,19 +92,15 @@ function validateForm(form) {
     }
   });
 
-  const fileInputs = form.querySelectorAll('input[type="file"][required]');
-  fileInputs.forEach((input) => {
-    if (!input.files || input.files.length === 0) {
+  //Проверка файловых полей
+  form.querySelectorAll('input[type="file"][required]').forEach((input) => {
+    const hasFiles = input.files && input.files.length > 0;
+    if (!hasFiles) {
       isValid = false;
       const dropArea = input
         .closest(".file-upload")
-        .querySelector(".drop-area");
-      dropArea.style.borderColor = "red";
-    } else {
-      const dropArea = input
-        .closest(".file-upload")
-        .querySelector(".drop-area");
-      dropArea.style.borderColor = "#ccc";
+        ?.querySelector(".drop-area");
+      if (dropArea) dropArea.style.borderColor = "red";
     }
   });
 
@@ -130,135 +113,59 @@ function validateForm(form) {
 
 async function submitForm(form, url, title, descr, userId) {
   const submitBtn = form.querySelector(".submit-btn");
-  submitBtn.disabled = true;
-  submitBtn.textContent = "Отправка...";
 
   try {
-    const formData = {
-      title: title,
-      description: descr,
-      user_id: userId,
-    };
+    setButtonState(submitBtn, true, "Отправка...");
 
-    const { error: dbError } = await supabaseDB.from(url).insert(formData);
+    const { error: dbError } = await supabaseDB.from(url).insert({
+      title,
+      discription: descr,
+      user_id: userId,
+    });
 
     if (dbError) throw dbError;
 
-    alert("Данные успешно сохранены");
-    form.reset();
+    showSuccess(form, "Данные успешно сохранены");
   } catch (error) {
-    console.error("Ошибка:", error);
-    alert(`Произошла ошибка при отправке данных: ${error.message}`);
+    handleError(error);
   } finally {
-    submitBtn.disabled = false;
-    submitBtn.textContent = "Создать";
+    setButtonState(submitBtn, false, "Создать");
   }
 }
 
-async function submitCommentForm(form, comment, name, city, fileInput, userId) {
+async function submitCommentForm(form, type, {comment, name, city, fileInput, userId}) {
   const submitBtn = form.querySelector(".submit-btn");
-  submitBtn.disabled = true;
-  submitBtn.textContent = "Отправка...";
+
 
   try {
-    let imageUrls = {};
+   setButtonState(submitBtn, true, "Отправка...");
+    const imageUrls = imageFile.files?.length > 0
+   ? await processCommentImage(imageFile.files[0])
+   : {};
+   
 
-    if (fileInput.files && fileInput.files.length > 0) {
-      const file = fileInput.files[0];
-
-      if (!(file instanceof File)) {
-        throw new Error("Файл не допустимого типа");
-      }
-
-      const fileExt = file.name.split(".").pop().toLowerCase();
-      const allowedExtensions = ["jpg", "jpeg", "png", "gif", "webp"];
-
-      if (!allowedExtensions.includes(fileExt)) {
-        throw new Error("Неподдерживаемый формат файла");
-      }
-
-      const versions = {
-        "1x": { width: 366, height: 366 }, //1x(366*366)
-        "2x": { width: 732, height: 732 }, //2x(732*732)
-        "3x": { width: 1098, height: 1098 }, //3x размер
-        mobile_1: { width: 366, height: 250 }, //Мобильная версии 1
-        mobile_1_2x: { width: 732, height: 500 }, //2x(732X500)
-        mobile_2: { width: 366, height: 200 }, //1x(366X200)
-        mobile_2_2x: { width: 732, height: 400 }, //2x()
-      };
-
-      const img = await createImageFromFile(file);
-
-      //Обрабатываем каждую версию
-      for (const [version, size] of Object.entries(versions)) {
-        //Изменяем размер изображения и конвертируем в webp
-        const resizedImageBlob = await resizeConvertToWebp(
-          img,
-          size.width,
-          size.height
-        );
-
-        //Генерируем уникальное имя файла для каждой версии
-        const fileName = `${Date.now()}-${Math.random()
-          .toString(36)
-          .substring(2, 9)}-${version}.webp`;
-
-        const filePath = `comment-${fileName}`;
-
-        const fileBuffer = await readFileAsBuffer(resizedImageBlob);
-
-        const params = {
-          Bucket: "comment",
-          Key: filePath,
-          Body: fileBuffer,
-          ContentType: "image/webp",
-        };
-        const command = new PutObjectCommand(params);
-
-        const data = await client.send(command);
-
-        if (!data) throw new Error("Error send photo");
-        imageUrls[
-          version
-        ] = `https://voygehzdwnkrsowhseyh.supabase.co/storage/v1/object/public/comment/${filePath}`;
-      }
-    }
-
-    const formData = {
-      comment: comment,
-      name: name,
-      city: city,
-      image: imageUrls["1x"], //основное изображение
-      image_2x: imageUrls["2x"], //2x версия
-      image_3x: imageUrls["3x"], //3x
-      //Мобильная версия (366*250 и 2х)
-      image_mobile_1: imageUrls["mobile_1"], //366x250(1x)
-      image_mobile_1_2x: imageUrls["mobile_1_2x"], //732x300(2x)
-      //Мобильная версия (366Х200 и 2х)
-      image_mobile_2: imageUrls["mobile_2"], //366x200(1x)
-      image_mobile_2_2x: imageUrls["mobile_2_2x"], //732x400(2x)
-      user_id: userId,
-    };
-
-    const { error: dbError } = await supabaseDB
-      .from("comment")
-      .insert(formData);
+    const { error: dbError } = await supabaseDB 
+      .from(type)
+      .insert({
+        comment,
+        name,
+        city,
+        image: imageUrls["1x"],
+        image_2x: imageUrls["2x"],
+        image_3x: imageUrls["3x"],
+        image_mobile_1: imageUrls["mobile_1"],
+        image_mobile_1_2x: imageUrls["mobile_1_2x"],
+        image_mobile_2: imageUrls["mobile_2"],
+        image_mobile_2_2x: imageUrls["mobile_2_2x"],
+        user_id: userId
+      });
 
     if (dbError) throw dbError;
-
-    //Успешная отправка
-    alert("Отзыв успешно добавлен!");
-    form.reset();
-
-    //Очищаем превью изображения
-    const preview = form.querySelector(".file-preview");
-    preview.innerHTML = "";
+      showSuccess(form, "Отзыв успешно добавлен!");
   } catch (error) {
-    console.error("Ошибка:", error);
-    alert(`Произошла ошибка при отправке данных: ${error.message}`);
+    handleError(error);
   } finally {
-    submitBtn.disabled = false;
-    submitBtn.textContent = "Создать";
+   setButtonState(submitBtn, false, "Создать");
   }
 }
 
@@ -383,4 +290,84 @@ async function submitExampleForm(
     submitBtn.disabled = false;
     submitBtn.textContent = "Создать";
   }
+}
+
+//Вспомогательные функции
+async function processCommentImage(file) {
+  validateFile(file);
+
+  const versions = {
+    "1x": { width: 366, height: 366 },
+    "2x": { width: 732, height: 732 },
+    "3x": { width: 1098, height: 1098 },
+    module_1: { width: 366, height: 250 },
+    module_1_2x: { width: 732, height: 500 },
+    module_2: { width: 366, height: 200 },
+    module_2_2x: { width: 732, height: 400 },
+  };
+  return processImage(file, versions, "comment");
+}
+
+async function processExampleImage(fileInput, prefix){
+  if(!fileInput?.files?.length) return null;
+  const file = fileInput.files[0];
+  validateFile(file);
+
+  const versions = {
+    "1x": {width: 533, height: 531},
+    "2x": {width: 1066, height: 1062},
+    "3x": {width: 1599, height: 1593},
+    mobile_1x: {width: 449, height: 440},
+    mobile_2x: {width: 898, height: 880},
+  };
+
+  return processImage(file, versions, "example", prefix);
+}
+
+function validateFile(file){
+  if(!(file instanceof File)) {
+    throw new Error ("Файл не допустимого типа");
+  }
+  const fileExt = file.name.split(".").pop().toLowerCase();
+  if(!IMAGE_EXTENSIONS.includes(fileExt)) {
+    throw new Error("Неподдерживаемый формат файла");
+  }
+}
+
+async function processImage(file,versions, bucket, prefix = "") {
+  const img = await createImageFromFile(file);
+  const resultUrls = {};
+  await Promise.all(Object.entries(versions).map(async([version, size]) =>{
+    const resizedImageBlob = await resizeConvertToWebp(img, size.width, size.height);
+    const fileName = `${prefix}-${Date.now()}-${Math.random().toString(36).substring(2,9)}-${version}.webp`;
+  }))
+}
+async function uploadToS3(bucket, key, body) {
+  const command = new PutObjectCommand({
+    Bucket: bucket,
+    Key: key,
+    Body: body,
+    ContentType: "image/webp"
+  });
+  return client.send(command);
+}
+
+function getSupabaseUrl(bucket, filePath) {
+  return `https://voygehzdwnkrsowhseyh.supabase.co/storage/v1/object/public/${bucket}/${filePath}`;
+}
+
+function setButtonState(button, disabled, text) {
+  button.disabled = disabled;
+  button.textContent = text;
+}
+
+function showSuccess(form, message) {
+  alert(message);
+  form.reset();
+  form.querySelectorAll("file-preview").forEach((el) => (el.innerHTML = ""));
+}
+
+function handleError(error) {
+  console.error("Ошибка:", error);
+  alert(`Произошла ошибка при отправке данных: ${error.message}`);
 }
