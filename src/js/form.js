@@ -35,7 +35,7 @@ export function setupFormSubmissions() {
         comment: form.querySelector(".comment__text").value.trim(),
         name: form.querySelector(".comment__name").value.trim(),
         city: form.querySelector(".comment__city").value.trim(),
-        imageFile: form.querySelector(".comment__photo").value.trim(),
+        imageFile: form.querySelector(".comment__photo"),
       };
     },
     submitCommentForm
@@ -169,126 +169,41 @@ async function submitCommentForm(form, type, {comment, name, city, fileInput, us
   }
 }
 
-async function submitExampleForm(
-  form,
-  imageBefore,
-  imageAfter,
-  title,
-  task,
-  solution,
-  userId
-) {
+async function submitExampleForm(form, type, {imageBefore, imageAfter, title, task, solution, userId}) {
   const submitBtn = form.querySelector(".submit-btn");
-  submitBtn.disabled = true;
-  submitBtn.textContent = "Отправка...";
 
   try {
-    let imageUrlsBefore = {};
-    let imageUrlsAfter = {};
+   setButtonState(submitBtn, true, "Отправка...");
 
-    const uploadAndProcessImage = async (fileInput, prefix) => {
-      if (!fileInput || fileInput.files.length === 0) return null;
+   const [immageUrlsBefore, imageUrlsAfter] = await Promise.all([
+    processExampleImage(imageBefore, "before"),
+    processExampleImage(imageAfter, "after"),
+   ])
 
-      const file = fileInput.files[0];
-      if (!(file instanceof File)) {
-        throw new Error("Файл не допустимого типа");
-      }
+   const {error: dbError} = await supabaseDB.from(type).insert({
+    imageBefore: imageUrlsBefore?.["1x"],
+    imageBefore_2x: imageUrlsBefore?.["2x"],
+    imageBefore_3x: imageUrlsBefore?.["3x"],
+    imageBefore_mobile: imageUrlsBefore?.["mobile_1x"],
+    imageBefore_mobile_2x: imageUrlsBefore?.["mobile_2x"],
+    imageAfter: imageUrlsAfter?.["1x"],
+    imageAfter_2x: imageUrlsAfter?.["2x"],
+    imageAfter_3x: imageUrlsAfter?.["3x"],
+    imageAfter_mobile: imageUrlsAfter?.["mobile_1x"],
+    imageAfter_mobile_2x: imageUrlsAfter?.["mobile_2x"],
+    title,
+    task,
+    solution,
+    user_id: userId
+   });
 
-      const fileExt = file.name.split(".").pop().toLowerCase();
-      const allowedExtensions = ["jpg", "jpeg", "png", "gif", "webp"];
+   if(dbError) throw dbError;
 
-      if (!allowedExtensions.includes(fileExt)) {
-        throw new Error("Неподдерживаемый формат файла");
-      }
-
-      const versions = {
-        "1x": { width: 533, height: 531 }, // оригинальный размер
-        "2x": { width: 1066, height: 1062 }, // 2x размер
-        "3x": { width: 1599, height: 1593 }, // 3x размер
-        mobile_1x: { width: 449, height: 440 }, //Мобильная версия(1x)
-        mobile_2x: { width: 898, height: 880 }, //Мобильная версия(2x)
-      };
-
-      const img = await createImageFromFile(file);
-      const resultUrls = {};
-
-      for (const [version, size] of Object.entries(versions)) {
-        //Изменяем размер изображения и конвертируем в webp
-        const resizedImageBlob = await resizeConvertToWebp(
-          img,
-          size.width,
-          size.height
-        );
-        //Генерируем уникальное имя файла
-        const fileName = `${prefix}-${Date.now()}-${Math.random()
-          .toString(36)
-          .substring(2, 9)}-${version}.webp`;
-
-        const filePath = `example-${fileName}`;
-        const fileBuffer = await readFileAsBuffer(resizedImageBlob);
-
-        const params = {
-          Bucket: "example",
-          Key: filePath,
-          Body: fileBuffer,
-          ContentType: "image/webp",
-        };
-        const command = new PutObjectCommand(params);
-
-        await client.send(command);
-        resultUrls[
-          version
-        ] = `https://voygehzdwnkrsowhseyh.supabase.co/storage/v1/object/public/example/${filePath}`;
-      }
-
-      return resultUrls;
-    };
-
-    //Загружаем оба файла(если они есть)
-    if (imageBefore.files && imageBefore.files.length > 0) {
-      imageUrlsBefore = await uploadAndProcessImage(imageBefore, "before");
-    }
-
-    if (imageAfter.files && imageAfter.files.length > 0) {
-      imageUrlsAfter = await uploadAndProcessImage(imageAfter, "after");
-    }
-
-    const formData = {
-      imageBefore: imageUrlsBefore["1x"] || null,
-      imageBefore_2x: imageUrlsBefore["2x"] || null,
-      imageBefore_3x: imageUrlsBefore["3x"] || null,
-      imageBefore_mobile: imageUrlsBefore["mobile_1x"] || null,
-      imageBefore_mobile_2x: imageUrlsBefore["mobile_2x"] || null,
-      imageAfter: imageUrlsAfter["1x"] || null,
-      imageAfter_2x: imageUrlsAfter["2x"] || null,
-      imageAfter_3x: imageUrlsAfter["3x"] || null,
-      imageAfter_mobile: imageUrlsAfter["mobile_1x"] || null,
-      imageAfter_mobile_2x: imageUrlsAfter["mobile_2x"] || null,
-      title: title,
-      task: task,
-      solution: solution,
-      user_id: userId,
-    };
-
-    const { error: dbError } = await supabaseDB
-      .from("example")
-      .insert(formData);
-
-    if (dbError) throw dbError;
-
-    //Успешная отправка
-    alert("Пример успешно добавлен!");
-    form.reset();
-
-    //Очищаем превью изображения
-    const previews = form.querySelectorAll(".file-preview");
-    previews.forEach((preview) => (preview.innerHTML = ""));
+   showSuccess(form, "Пример успешно добавлен!");
   } catch (error) {
-    console.error("Ошибка:", error);
-    alert(`Произошла ошибка при отправке данных: ${error.message}`);
+   handleError(error);
   } finally {
-    submitBtn.disabled = false;
-    submitBtn.textContent = "Создать";
+   setButtonState(submitBtn, false, "Создать");
   }
 }
 
@@ -340,8 +255,15 @@ async function processImage(file,versions, bucket, prefix = "") {
   await Promise.all(Object.entries(versions).map(async([version, size]) =>{
     const resizedImageBlob = await resizeConvertToWebp(img, size.width, size.height);
     const fileName = `${prefix}-${Date.now()}-${Math.random().toString(36).substring(2,9)}-${version}.webp`;
-  }))
+    const filePath = `{bucket}-${fileName}`;
+
+    await uploadToS3(bucket, filePath, await readFileAsBuffer(resizedImageBlob));
+    resultUrls[version] = getSupabaseUrl(bucket, filePath);
+  }));
+
+  return resultUrls;
 }
+
 async function uploadToS3(bucket, key, body) {
   const command = new PutObjectCommand({
     Bucket: bucket,
