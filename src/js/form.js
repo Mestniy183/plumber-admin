@@ -23,13 +23,13 @@ export function setupFormSubmissions() {
   setupFormHandler(".question__new-form", "questions", async (form) => {
     return {
       title: form.querySelector(".question-title").value.trim(),
-      descr: form.querySelector(".question-description").value.trim(),
+      descr: form.querySelector(".question-descr").value.trim(),
     };
   });
 
   setupFormHandler(
-    "comment__new-form",
-    "comments",
+    ".comment__new-form",
+    "comment",
     async (form) => {
       return {
         comment: form.querySelector(".comment__text").value.trim(),
@@ -42,8 +42,8 @@ export function setupFormSubmissions() {
   );
 
   setupFormHandler(
-    "example__new-form",
-    "examples",
+    ".example__new-form",
+    "example",
     async (form) => {
       return {
         imageBefore: form.querySelector(".example-photo-1"),
@@ -63,6 +63,7 @@ function setupFormHandler(
   extractDataFn,
   customSubmitFn = submitForm
 ) {
+  console.log(selector);
   document
     .querySelector(selector)
     .addEventListener("submit", async function (e) {
@@ -111,7 +112,7 @@ function validateForm(form) {
   return isValid;
 }
 
-async function submitForm(form, url, title, descr, userId) {
+async function submitForm(form, url, { title, descr, userId }) {
   const submitBtn = form.querySelector(".submit-btn");
 
   try {
@@ -119,7 +120,7 @@ async function submitForm(form, url, title, descr, userId) {
 
     const { error: dbError } = await supabaseDB.from(url).insert({
       title,
-      discription: descr,
+      description: descr,
       user_id: userId,
     });
 
@@ -133,77 +134,87 @@ async function submitForm(form, url, title, descr, userId) {
   }
 }
 
-async function submitCommentForm(form, type, {comment, name, city, fileInput, userId}) {
+async function submitCommentForm(
+  form,
+  type,
+  { comment, name, city, imageFile, userId }
+) {
   const submitBtn = form.querySelector(".submit-btn");
 
-
   try {
-   setButtonState(submitBtn, true, "Отправка...");
-    const imageUrls = imageFile.files?.length > 0
-   ? await processCommentImage(imageFile.files[0])
-   : {};
-   
+    setButtonState(submitBtn, true, "Отправка...");
+    const imageUrls =
+      imageFile.files?.length > 0
+        ? await processCommentImage(imageFile.files[0])
+        : {};
 
-    const { error: dbError } = await supabaseDB 
-      .from(type)
-      .insert({
-        comment,
-        name,
-        city,
-        image: imageUrls["1x"],
-        image_2x: imageUrls["2x"],
-        image_3x: imageUrls["3x"],
-        image_mobile_1: imageUrls["mobile_1"],
-        image_mobile_1_2x: imageUrls["mobile_1_2x"],
-        image_mobile_2: imageUrls["mobile_2"],
-        image_mobile_2_2x: imageUrls["mobile_2_2x"],
-        user_id: userId
-      });
+    console.log(type);
+
+    const { error: dbError } = await supabaseDB.from(type).insert({
+      comment,
+      name,
+      city,
+      image: imageUrls["1x"],
+      image_2x: imageUrls["2x"],
+      image_3x: imageUrls["3x"],
+      image_mobile_1: imageUrls["mobile_1"],
+      image_mobile_1_2x: imageUrls["mobile_1_2x"],
+      image_mobile_2: imageUrls["mobile_2"],
+      image_mobile_2_2x: imageUrls["mobile_2_2x"],
+      user_id: userId,
+    });
 
     if (dbError) throw dbError;
-      showSuccess(form, "Отзыв успешно добавлен!");
+    showSuccess(form, "Отзыв успешно добавлен!");
   } catch (error) {
     handleError(error);
   } finally {
-   setButtonState(submitBtn, false, "Создать");
+    setButtonState(submitBtn, false, "Создать");
   }
 }
 
-async function submitExampleForm(form, type, {imageBefore, imageAfter, title, task, solution, userId}) {
+async function submitExampleForm(
+  form,
+  type,
+  { imageBefore, imageAfter, title, task, solution, userId }
+) {
   const submitBtn = form.querySelector(".submit-btn");
 
   try {
-   setButtonState(submitBtn, true, "Отправка...");
+    setButtonState(submitBtn, true, "Отправка...");
 
-   const [immageUrlsBefore, imageUrlsAfter] = await Promise.all([
-    processExampleImage(imageBefore, "before"),
-    processExampleImage(imageAfter, "after"),
-   ])
+    const [imageUrlsBefore, imageUrlsAfter] = await Promise.all([
+      processExampleImage(imageBefore, "before"),
+      processExampleImage(imageAfter, "after"),
+    ]);
 
-   const {error: dbError} = await supabaseDB.from(type).insert({
-    imageBefore: imageUrlsBefore?.["1x"],
-    imageBefore_2x: imageUrlsBefore?.["2x"],
-    imageBefore_3x: imageUrlsBefore?.["3x"],
-    imageBefore_mobile: imageUrlsBefore?.["mobile_1x"],
-    imageBefore_mobile_2x: imageUrlsBefore?.["mobile_2x"],
-    imageAfter: imageUrlsAfter?.["1x"],
-    imageAfter_2x: imageUrlsAfter?.["2x"],
-    imageAfter_3x: imageUrlsAfter?.["3x"],
-    imageAfter_mobile: imageUrlsAfter?.["mobile_1x"],
-    imageAfter_mobile_2x: imageUrlsAfter?.["mobile_2x"],
-    title,
-    task,
-    solution,
-    user_id: userId
-   });
+    console.log(imageUrlsBefore);
+    console.log(imageUrlsAfter);
 
-   if(dbError) throw dbError;
+    const { error: dbError } = await supabaseDB.from(type).insert({
+      imageBefore: imageUrlsBefore?.["1x"],
+      imageBefore_2x: imageUrlsBefore?.["2x"],
+      imageBefore_3x: imageUrlsBefore?.["3x"],
+      imageBefore_mobile: imageUrlsBefore?.["mobile_1x"],
+      imageBefore_mobile_2x: imageUrlsBefore?.["mobile_2x"],
+      imageAfter: imageUrlsAfter?.["1x"],
+      imageAfter_2x: imageUrlsAfter?.["2x"],
+      imageAfter_3x: imageUrlsAfter?.["3x"],
+      imageAfter_mobile: imageUrlsAfter?.["mobile_1x"],
+      imageAfter_mobile_2x: imageUrlsAfter?.["mobile_2x"],
+      title,
+      task,
+      solution,
+      user_id: userId,
+    });
 
-   showSuccess(form, "Пример успешно добавлен!");
+    if (dbError) throw dbError;
+
+    showSuccess(form, "Пример успешно добавлен!");
   } catch (error) {
-   handleError(error);
+    handleError(error);
   } finally {
-   setButtonState(submitBtn, false, "Создать");
+    setButtonState(submitBtn, false, "Создать");
   }
 }
 
@@ -223,43 +234,55 @@ async function processCommentImage(file) {
   return processImage(file, versions, "comment");
 }
 
-async function processExampleImage(fileInput, prefix){
-  if(!fileInput?.files?.length) return null;
+async function processExampleImage(fileInput, prefix) {
+  if (!fileInput?.files?.length) return null;
   const file = fileInput.files[0];
   validateFile(file);
 
   const versions = {
-    "1x": {width: 533, height: 531},
-    "2x": {width: 1066, height: 1062},
-    "3x": {width: 1599, height: 1593},
-    mobile_1x: {width: 449, height: 440},
-    mobile_2x: {width: 898, height: 880},
+    "1x": { width: 533, height: 531 },
+    "2x": { width: 1066, height: 1062 },
+    "3x": { width: 1599, height: 1593 },
+    mobile_1x: { width: 449, height: 440 },
+    mobile_2x: { width: 898, height: 880 },
   };
 
   return processImage(file, versions, "example", prefix);
 }
 
-function validateFile(file){
-  if(!(file instanceof File)) {
-    throw new Error ("Файл не допустимого типа");
+function validateFile(file) {
+  if (!(file instanceof File)) {
+    throw new Error("Файл не допустимого типа");
   }
   const fileExt = file.name.split(".").pop().toLowerCase();
-  if(!IMAGE_EXTENSIONS.includes(fileExt)) {
+  if (!IMAGE_EXTENSIONS.includes(fileExt)) {
     throw new Error("Неподдерживаемый формат файла");
   }
 }
 
-async function processImage(file,versions, bucket, prefix = "") {
+async function processImage(file, versions, bucket, prefix = "") {
   const img = await createImageFromFile(file);
   const resultUrls = {};
-  await Promise.all(Object.entries(versions).map(async([version, size]) =>{
-    const resizedImageBlob = await resizeConvertToWebp(img, size.width, size.height);
-    const fileName = `${prefix}-${Date.now()}-${Math.random().toString(36).substring(2,9)}-${version}.webp`;
-    const filePath = `{bucket}-${fileName}`;
+  await Promise.all(
+    Object.entries(versions).map(async ([version, size]) => {
+      const resizedImageBlob = await resizeConvertToWebp(
+        img,
+        size.width,
+        size.height
+      );
+      const fileName = `${prefix}-${Date.now()}-${Math.random()
+        .toString(36)
+        .substring(2, 9)}-${version}.webp`;
+      const filePath = `${bucket}-${fileName}`;
 
-    await uploadToS3(bucket, filePath, await readFileAsBuffer(resizedImageBlob));
-    resultUrls[version] = getSupabaseUrl(bucket, filePath);
-  }));
+      await uploadToS3(
+        bucket,
+        filePath,
+        await readFileAsBuffer(resizedImageBlob)
+      );
+      resultUrls[version] = getSupabaseUrl(bucket, filePath);
+    })
+  );
 
   return resultUrls;
 }
@@ -269,12 +292,13 @@ async function uploadToS3(bucket, key, body) {
     Bucket: bucket,
     Key: key,
     Body: body,
-    ContentType: "image/webp"
+    ContentType: "image/webp",
   });
   return client.send(command);
 }
 
 function getSupabaseUrl(bucket, filePath) {
+  console.log(bucket);
   return `https://voygehzdwnkrsowhseyh.supabase.co/storage/v1/object/public/${bucket}/${filePath}`;
 }
 

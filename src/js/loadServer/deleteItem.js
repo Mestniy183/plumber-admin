@@ -22,6 +22,7 @@ export async function deleteItem(itemId, tableName, itemName) {
     for (const key in item) {
       if (key.includes("image")) {
         const imageUrl = item[key];
+        console.log(imageUrl);
 
         try {
           const bucket = tableName === "comment" ? "comment" : "example";
