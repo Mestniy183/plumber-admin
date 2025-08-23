@@ -63,7 +63,6 @@ function setupFormHandler(
   extractDataFn,
   customSubmitFn = submitForm
 ) {
-  console.log(selector);
   document
     .querySelector(selector)
     .addEventListener("submit", async function (e) {
@@ -148,8 +147,6 @@ async function submitCommentForm(
         ? await processCommentImage(imageFile.files[0])
         : {};
 
-    console.log(type);
-
     const { error: dbError } = await supabaseDB.from(type).insert({
       comment,
       name,
@@ -188,9 +185,6 @@ async function submitExampleForm(
       processExampleImage(imageAfter, "after"),
     ]);
 
-    console.log(imageUrlsBefore);
-    console.log(imageUrlsAfter);
-
     const { error: dbError } = await supabaseDB.from(type).insert({
       imageBefore: imageUrlsBefore?.["1x"],
       imageBefore_2x: imageUrlsBefore?.["2x"],
@@ -226,10 +220,10 @@ async function processCommentImage(file) {
     "1x": { width: 366, height: 366 },
     "2x": { width: 732, height: 732 },
     "3x": { width: 1098, height: 1098 },
-    module_1: { width: 366, height: 250 },
-    module_1_2x: { width: 732, height: 500 },
-    module_2: { width: 366, height: 200 },
-    module_2_2x: { width: 732, height: 400 },
+    mobile_1: { width: 366, height: 250 },
+    mobile_1_2x: { width: 732, height: 500 },
+    mobile_2: { width: 366, height: 200 },
+    mobile_2_2x: { width: 732, height: 400 },
   };
   return processImage(file, versions, "comment");
 }
@@ -270,7 +264,10 @@ async function processImage(file, versions, bucket, prefix = "") {
         size.width,
         size.height
       );
-      const fileName = `${prefix}-${Date.now()}-${Math.random()
+
+      const fileName = `${
+        prefix ? prefix + "-" : ""
+      }${Date.now()}-${Math.random()
         .toString(36)
         .substring(2, 9)}-${version}.webp`;
       const filePath = `${bucket}-${fileName}`;
@@ -298,7 +295,6 @@ async function uploadToS3(bucket, key, body) {
 }
 
 function getSupabaseUrl(bucket, filePath) {
-  console.log(bucket);
   return `https://voygehzdwnkrsowhseyh.supabase.co/storage/v1/object/public/${bucket}/${filePath}`;
 }
 
@@ -310,7 +306,7 @@ function setButtonState(button, disabled, text) {
 function showSuccess(form, message) {
   alert(message);
   form.reset();
-  form.querySelectorAll("file-preview").forEach((el) => (el.innerHTML = ""));
+  form.querySelectorAll(".file-preview").forEach((el) => (el.innerHTML = ""));
 }
 
 function handleError(error) {

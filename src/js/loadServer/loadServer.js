@@ -24,6 +24,7 @@ async function fetchTableData(tableName) {
   if (error) throw error;
   return data;
 }
+
 //Общая функция для обработки ошибок рендеринга
 function handleRenderError() {
   Object.values(SELECTORS).forEach((selector) => {
@@ -31,6 +32,7 @@ function handleRenderError() {
     if (element) element.innerHTML = ERROR_MSG;
   });
 }
+
 export async function loadServer() {
   try {
     const [user, services, questions, comments, examples] = await Promise.all([
